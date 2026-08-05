@@ -96,7 +96,7 @@ jobs:
             sdk_url="${{ inputs.custom_sdk_url }}"
             echo "Using custom SDK URL"
           else
-            base_url="https://downloads.openwrt.org/${{ inputs.openwrt_version }}/targets/${{ inputs.target }}/"
+            base_url="https://downloads.openwrt.org/releases/${{ inputs.openwrt_version }}/targets/${{ inputs.target }}/"
             sdk_file=$(curl -s "$base_url" | grep -oE 'openwrt-sdk-[^"<>]*\.tar\.(zst|xz)' | sort -u | tail -n1)
             if [ -z "$sdk_file" ]; then
               echo "::error::No OpenWrt SDK found at $base_url, check version/target or provide a custom SDK URL."
