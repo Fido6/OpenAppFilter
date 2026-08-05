@@ -151,7 +151,8 @@ jobs:
           # Link this repository as a local feed (builds the current checkout)
           echo "src-link oaf $GITHUB_WORKSPACE" >> feeds.conf.default
           cat feeds.conf.default
-
+          ./scripts/feeds update -a
+          ./scripts/feeds update -i
           ./scripts/feeds update oaf packages luci
           ./scripts/feeds install -a
 
@@ -170,15 +171,35 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-oaf=m" >> .config
           echo "CONFIG_PACKAGE_appfilter=m" >> .config
           echo "CONFIG_PACKAGE_kmod-oaf=m" >> .config
+          # 必须启用以下内容，不然编译时报错缺失lua.h
           echo "CONFIG_PACKAGE_luci-compat=y" >> .config
-          echo "CONFIG_PACKAGE_lua=y" >> .config
+          echo "CONFIG_PACKAGE_lua5.4=y" >> .config
           echo "CONFIG_LUCI_LANG_zh_Hans=y" >> .config
           make defconfig
+          make package/base-files/compile -j$(nproc)
+          make prepare
 
       - name: Compile OAF packages
         id: compile
         run: |
           cd sdk
+          echo "========== check staging =========="
+
+          find staging_dir -name libubox
+
+          find staging_dir -name lua
+
+          echo "===== SDK package targets ====="
+          make -qp | grep "^package/.*lua.*/compile" | head -20
+
+          echo "===== staging headers ====="
+          find staging_dir -name uloop.h
+          find staging_dir -name lua.h
+
+          echo "===== installed packages ====="
+          ls staging_dir/target-*/pkginfo | grep -E "lua|libubox|luci"
+
+          echo "=========== end =============="
           if [ ! -d package/feeds/oaf ]; then
             echo "::error::OAF feed is not installed. Check the 'Configure feeds' step log."
             exit 1

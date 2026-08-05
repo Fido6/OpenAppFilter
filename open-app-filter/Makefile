@@ -5,8 +5,9 @@ PKG_NAME:=appfilter
 PKG_VERSION:=6.1.8
 PKG_RELEASE:=1
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
+PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VERSION)
 include $(INCLUDE_DIR)/package.mk
+$(call Build/Prepare/Default)
 
 TARGET_CFLAGS +=-Werror=implicit-function-declaration
 define Package/appfilter
@@ -21,14 +22,38 @@ define Build/Prepare
 	cp -rf ./src/* $(PKG_BUILD_DIR)
 endef
 
+CFLAGS += $(CPPFLAGS)
 define Build/Compile
-	$(MAKE) -C $(PKG_BUILD_DIR)/ \
-	CC="$(TARGET_CROSS)gcc" \
-	CFLAGS="$(TARGET_CFLAGS)" \
-	LIBS="$(TARGET_LDFLAGS) -lm -lpthread -lubox -luci -lubus -ljson-c -lblobmsg_json" \
-	all
-endef	
+	@echo "CC=$(TARGET_CC)"
+    @echo "CPPFLAGS=$(TARGET_CPPFLAGS)"
+    @echo "CFLAGS=$(TARGET_CFLAGS)"
+    @echo "LDFLAGS=$(TARGET_LDFLAGS)"
+    $(MAKE) -C $(PKG_BUILD_DIR) \
+        CC="$(TARGET_CC)" \
+        CPPFLAGS="$(TARGET_CPPFLAGS)" \
+        CFLAGS="$(TARGET_CFLAGS)" \
+        LDFLAGS="$(TARGET_LDFLAGS)" \
+        LDLIBS="-lubox -lubus -luci -ljson-c -lblobmsg_json -lpthread -lm"
+endef
+# CFLAGS += $(CPPFLAGS)
 
+#LDLIBS += \
+#    -lubox \
+#    -lubus \
+#    -luci \
+#    -ljson-c \
+#    -lblobmsg_json \
+#    -lpthread \
+#    -lm
+#define Build/Compile
+#    $(MAKE) -C $(PKG_BUILD_DIR) \
+#        CC="$(TARGET_CC)" \
+#        CFLAGS="$(TARGET_CFLAGS) $(TARGET_CPPFLAGS)" \
+#        CPPFLAGS="$(TARGET_CPPFLAGS)" \
+#        LDFLAGS="$(TARGET_LDFLAGS)" \
+#        STAGING_DIR="$(STAGING_DIR)" \
+#        all
+#endef
 
 define Build/Compile/Default
 

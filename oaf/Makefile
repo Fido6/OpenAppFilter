@@ -4,6 +4,7 @@ include $(INCLUDE_DIR)/kernel.mk
 
 PKG_NAME:=oaf
 include $(INCLUDE_DIR)/package.mk
+PKG_RELEASE:=1
 
 PKG_AUTOLOAD:=oaf
 RSTRIP:=:
