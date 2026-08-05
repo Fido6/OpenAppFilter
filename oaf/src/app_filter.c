@@ -282,7 +282,7 @@ static int add_app_feature(int appid, char *name, char *feature)
 	char src_port_str[16] = {0};
 	port_info_t dport_info;
 	char dst_port_str[16] = {0};
-	char host_url[32] = {0};
+	char host_url[MAX_HOST_URL_LEN] = {0};
 	char request_url[128] = {0};
 	char dict[128] = {0};
 	int proto = IPPROTO_TCP;
@@ -1098,6 +1098,10 @@ static int match_app_filter_rule(int appid, af_client_info_t *client)
 	if (!match_app_filter_user(client))
 		return AF_FALSE;
 
+	// custom rule appid (AdGuard style), always filter, independent of app status config
+	if (appid >= AF_CUSTOM_RULE_APPID_BASE && appid < AF_CUSTOM_RULE_APPID_MAX)
+		return AF_TRUE;
+
 	// All apps mode: skip appid check, match user only
 	if (g_app_filter_mode == 1) {
 		return AF_TRUE;
@@ -1347,7 +1351,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 			return NF_DROP;
 		}
 
-		if (check_app_action_changed(flow.drop, flow.app_id, client)){
+		if (!conn->ignore && check_app_action_changed(flow.drop, flow.app_id, client)){
 			flow.drop = !flow.drop;
 			AF_LMT_DEBUG("update appid %d action, new action = %s\n", flow.app_id, flow.drop ? "drop" : "accept");
 		}
@@ -1386,7 +1390,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		if (!match_feature(&flow) && 0 == g_app_filter_mode)
 			goto EXIT;
 		
-		if (g_oaf_filter_enable){
+		if (g_oaf_filter_enable && !(flow.feature && flow.feature->ignore)){
 			if (match_app_filter_rule(flow.app_id, client)){
 				flow.drop = 1;
 				AF_INFO("##Drop appid %d\n",flow.app_id);
@@ -1515,7 +1519,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		if (app_id > 1000 && app_id < 32000)
 		{
 			AF_LMT_DEBUG("appid = %d, ct_action = %d\n", app_id, ct_action);
-			if (check_app_action_changed(ct_action, app_id, client)){
+			if (!flow.ignore && check_app_action_changed(ct_action, app_id, client)){
 				if (ct_action) // drop --> accept
 					ct->mark &= ~NF_DROP_BIT;
 				else
@@ -1610,7 +1614,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		AF_LMT_DEBUG("gateway set ignore bit, ct->mark = %x\n", ct->mark);
 	}
 	
-	if (g_oaf_filter_enable){
+	if (g_oaf_filter_enable && !(flow.feature && flow.feature->ignore)){
 		if (match_app_filter_rule(flow.app_id, client))
 		{
 			ct->mark |= NF_DROP_BIT;

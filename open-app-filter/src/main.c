@@ -29,6 +29,7 @@ THE SOFTWARE.
 #include "appfilter_netlink.h"
 #include "appfilter_ubus.h"
 #include "appfilter_config.h"
+#include "appfilter_custom_rule.h"
 #include <time.h>
 #include <signal.h>
 #include <netinet/in.h>
@@ -740,6 +741,7 @@ int reload_feature(void){
         LOG_ERROR("Failed to load feature to kernel\n");
         return -1;
     }
+    load_custom_rules();
     clean_invalid_app_records();
     clear_device_app_statistics();
     LOG_WARN("reload feature success\n");

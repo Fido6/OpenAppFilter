@@ -817,3 +817,24 @@ msgstr "禁用硬件加速（HNAT/ECM）和流加速，以确保应用过滤功�
 
 msgid "Current hardware acceleration module is not disabled, which may affect filtering functionality. For better filtering results, please disable the acceleration module in Advanced Settings."
 msgstr "当前未关闭加速模块，可能影响过滤功能，为了更好的过滤效果，请在高级设置中关闭加速模块。"
+
+msgid "Custom Rules"
+msgstr "自定义规则"
+
+msgid "Custom rules follow the AdGuard Home syntax. They take effect immediately after saving, no feature library update is required. Custom rules are matched before the feature library, so they can override library rules."
+msgstr "自定义规则采用 AdGuard Home 语法，保存后立即生效，无需更新特征库。自定义规则在特征库之前匹配，可覆盖特征库规则。"
+
+msgid "General"
+msgstr "通用"
+
+msgid "Enable Custom Rules"
+msgstr "启用自定义规则"
+
+msgid "If disabled, all custom rules will not take effect."
+msgstr "关闭后所有自定义规则将不生效。"
+
+msgid "Rules (AdGuard Home Syntax)"
+msgstr "规则（AdGuard Home 语法）"
+
+msgid "One rule per line:<br/>||example.org^ - block example.org and all subdomains<br/>@@||example.org^ - allow example.org and all subdomains<br/>127.0.0.1 example.org - block example.org exactly (subdomains not included)<br/>/REGEX/ - block domains matching the regular expression<br/>! comment or # comment - comment line<br/><br/>Notes: custom rules are matched before the feature library; allow (ignore) rules have higher priority than block rules; regex does not support | ( ) { } and the rule must not contain # ; , [ ]; up to 500 rules are supported; changes take effect immediately after saving."
+msgstr "每行一条规则：<br/>||example.org^ - 阻止 example.org 及其所有子域名<br/>@@||example.org^ - 解除对 example.org 及其所有子域名的拦截<br/>127.0.0.1 example.org - 仅精确阻止 example.org（不包含子域名）<br/>/REGEX/ - 阻止与正则表达式匹配的域名<br/>! 注释 或 # 注释 - 注释行<br/><br/>说明：自定义规则在特征库之前匹配；放行（白名单）规则优先级高于阻止规则；正则不支持 | ( ) { }，规则内容不能包含 # ; , [ ]；最多支持 500 条规则；保存后立即生效。"

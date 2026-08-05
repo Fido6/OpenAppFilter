@@ -44,6 +44,10 @@
 
 #define MAX_SEARCH_STR_LEN 32
 
+/* Custom rule (AdGuard style) appid range */
+#define AF_CUSTOM_RULE_APPID_BASE 30001
+#define AF_CUSTOM_RULE_APPID_MAX  30512
+
 enum AF_FEATURE_PARAM_INDEX{
 	AF_PROTO_PARAM_INDEX,
 	AF_SRC_PORT_PARAM_INDEX,
