@@ -115,9 +115,9 @@ jobs:
           mkdir sdk
           file_name="$SDK_FILE"
           if [[ $file_name == *.tar.xz ]]; then
-            tar -xJf "$file_name" -C ./sdk --strip-components=1
+            sudo tar -xJf "$file_name" -C ./sdk --strip-components=1
           elif [[ $file_name == *.tar.zst ]]; then
-            tar --zstd -x -f "$file_name" -C ./sdk --strip-components=1
+            sudo tar --zstd -x -f "$file_name" -C ./sdk --strip-components=1
           else
             echo "::error::Unsupported SDK format: $file_name"
             exit 1
@@ -126,6 +126,7 @@ jobs:
 
       - name: Configure feeds
         run: |
+          sudo chmod 777 -R sdk
           cd sdk
           # Update feeds to github source
           sed -i \
@@ -182,6 +183,10 @@ jobs:
             echo "::error::OAF feed is not installed. Check the 'Configure feeds' step log."
             exit 1
           fi
+          # Build lua first to ensure lua.h is available in the staging directory
+          # (lucihttp, a dependency of luci-app-oaf, requires lua.h at compile time)
+          echo "========== compile lua (dependency for luci-app-oaf) =========="
+          make package/lua/compile -j$(nproc) V=s || make package/lua/compile -j1 V=s
           echo "========== compile luci-app-oaf =========="
           make package/luci-app-oaf/compile -j$(nproc) V=s || make package/luci-app-oaf/compile -j1 V=s
           echo "========== compile appfilter (oafd) =========="
