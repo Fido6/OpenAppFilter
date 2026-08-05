@@ -169,6 +169,8 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-oaf=m" >> .config
           echo "CONFIG_PACKAGE_appfilter=m" >> .config
           echo "CONFIG_PACKAGE_kmod-oaf=m" >> .config
+          echo "CONFIG_PACKAGE_luci-compat=y" >> .config
+          echo "CONFIG_PACKAGE_lua=y" >> .config
           echo "CONFIG_LUCI_LANG_zh_Hans=y" >> .config
           make defconfig
 
