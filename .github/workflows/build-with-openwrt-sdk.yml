@@ -163,14 +163,15 @@ jobs:
       - name: Configure .config
         run: |
           cd sdk
-          echo "CONFIG_ALL_NONSHARED=n" > .config
-          echo "CONFIG_ALL_KMODS=n" >> .config
-          echo "CONFIG_ALL=n" >> .config
-          echo "CONFIG_AUTOREMOVE=n" >> .config
-          echo "CONFIG_SIGNED_PACKAGES=n" >> .config
-          echo "CONFIG_PACKAGE_luci-app-oaf=m" >> .config
-          echo "CONFIG_PACKAGE_appfilter=m" >> .config
-          echo "CONFIG_PACKAGE_kmod-oaf=m" >> .config
+          curl https://raw.githubusercontent.com/Fido6/OpenAppFilter/refs/heads/master/.config > .config
+#          echo "CONFIG_ALL_NONSHARED=n" > .config
+#          echo "CONFIG_ALL_KMODS=n" >> .config
+#          echo "CONFIG_ALL=n" >> .config
+#          echo "CONFIG_AUTOREMOVE=n" >> .config
+#          echo "CONFIG_SIGNED_PACKAGES=n" >> .config
+#          echo "CONFIG_PACKAGE_luci-app-oaf=m" >> .config
+#          echo "CONFIG_PACKAGE_appfilter=m" >> .config
+#          echo "CONFIG_PACKAGE_kmod-oaf=m" >> .config
           # 必须启用以下内容，不然编译时报错缺失lua.h
           echo "CONFIG_PACKAGE_luci-compat=y" >> .config
           echo "CONFIG_PACKAGE_lua5.4=y" >> .config
