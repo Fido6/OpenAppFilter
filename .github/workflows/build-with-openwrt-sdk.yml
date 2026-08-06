@@ -210,7 +210,7 @@ jobs:
             exit 1
           fi
 
-          find bin/packages -type f \( -name "kmod-oaf_*.ipk" -o -name "appfilter_*.ipk" -o -name "luci-app-oaf_*.ipk" \) -exec cp {} upload/ \;
+          find bin/packages -type f \( -name "kmod-oaf_*.apk" -o -name "*appfilter_*.apk" -o -name "luci-app-oaf_*.apk" \) -exec cp {} upload/ \;
           echo "Built packages:"
           ls -la upload/
 
@@ -229,15 +229,15 @@ jobs:
           Note: kmod-oaf is kernel-version specific, install it only on a matching OpenWrt firmware.
           EOF
 
-          ipk_count=$(ls upload/*.ipk 2>/dev/null | wc -l)
-          if [ "$ipk_count" -eq 0 ]; then
-            echo "::error::No ipk packages were built, check the compile step output."
+          apk_count=$(ls upload/*.apk 2>/dev/null | wc -l)
+          if [ "$apk_count" -eq 0 ]; then
+            echo "::error::No apk packages were built, check the compile step output."
             exit 1
           fi
 
           target_safe=$(echo "${OWRT_TARGET}" | tr '/' '-')
           echo "TARGET_SAFE=$target_safe" >> "$GITHUB_ENV"
-          zip -jr "upload/oaf_${target_safe}_${OWRT_VERSION}.zip" upload/*.ipk upload/build_info.txt
+          zip -jr "upload/oaf_${target_safe}_${OWRT_VERSION}.zip" upload/*.apk upload/build_info.txt
           echo "status=success" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
@@ -246,7 +246,7 @@ jobs:
         with:
           name: oaf-${{ env.TARGET_SAFE }}-${{ inputs.openwrt_version || '25.12.4' }}
           path: |
-            sdk/upload/*.ipk
+            sdk/upload/*.apk
             sdk/upload/*.zip
             sdk/upload/build_info.txt
           if-no-files-found: error
@@ -259,7 +259,7 @@ jobs:
         with:
           tag_name: ${{ inputs.release_tag }}
           files: |
-            sdk/upload/*.ipk
+            sdk/upload/*.apk
             sdk/upload/*.zip
           body: |
             OpenAppFilter packages built with OpenWrt SDK
