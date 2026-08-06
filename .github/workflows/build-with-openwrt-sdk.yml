@@ -12,7 +12,7 @@ on:
       openwrt_version:
         description: 'OpenWrt version: snapshots, 25.12.2, 24.10.6, 23.05.6, ...'
         required: true
-        default: 'snapshots'
+        default: '25.12.4'
         type: choice
         options:
           - snapshots
@@ -27,7 +27,7 @@ on:
       target:
         description: 'Target platform (target/subtarget), e.g. x86/64'
         required: true
-        default: 'x86/64'
+        default: 'rockchip/armv8'
         type: choice
         options:
           - x86/64
@@ -80,9 +80,14 @@ jobs:
           sudo -E rm -rf /usr/share/dotnet /etc/mysql /etc/php /usr/local/lib/android
           echo "Install packages"
           sudo -E apt-get -qq update
-          sudo -E apt-get -qq install build-essential binutils bison flex gawk gettext gcc-multilib \
-            g++-multilib git libncurses-dev libssl-dev libelf-dev python3 python3-pip python3-ply \
-            python3-pyelftools subversion unzip wget zlib1g-dev zstd xz-utils curl file rsync
+          sudo -E apt-get -qq install ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+            g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+            libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \
+            libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano \
+            ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
+            python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
+            upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
           sudo -E apt-get -qq autoremove --purge
           sudo -E apt-get -qq clean
 
@@ -144,9 +149,6 @@ jobs:
           case "${{ inputs.openwrt_version }}" in
             25.12*) branch="openwrt-25.12" ;;
             24.10*) branch="openwrt-24.10" ;;
-            23.05*) branch="openwrt-23.05" ;;
-            22.03*) branch="openwrt-22.03" ;;
-            21.02*) branch="openwrt-21.02" ;;
           esac
           echo "Pin feeds to branch: $branch"
           sed -i -E "s|^(src-git(-full)? packages )https://github\.com/openwrt/packages\.git.*$|\1https://github.com/openwrt/packages.git;$branch|" feeds.conf.default
