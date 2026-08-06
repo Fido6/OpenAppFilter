@@ -178,8 +178,8 @@ jobs:
           echo "CONFIG_PACKAGE_luci-app-oaf=m" > .config
           echo "CONFIG_LUCI_LANG_zh_Hans=y" >> .config
           make defconfig
-          make package/base-files/compile -j$(nproc)
-          make prepare
+          # make package/base-files/compile -j$(nproc)
+          # make prepare
 
       - name: Compile OAF packages
         id: compile
