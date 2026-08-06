@@ -22,8 +22,8 @@ define Package/appfilter/description
 endef
 
 define Package/appfilter/conffiles
-/etc/config/appfilter
-/etc/config/user_info
+	/etc/config/appfilter
+	/etc/config/user_info
 endef
 
 define Build/Prepare
