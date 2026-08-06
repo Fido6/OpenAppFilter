@@ -189,13 +189,13 @@ jobs:
             echo "::error::OAF feed is not installed. Check the 'Configure feeds' step log."
             exit 1
           fi
-          sudo su
+          
           echo "========== compile kmod-oaf =========="
-          make package/oaf/compile -j$(nproc) V=s || make package/oaf/compile -j1 V=s
+          sudo make package/oaf/compile -j$(nproc) V=s || sudo make package/oaf/compile -j1 V=s
           echo "========== compile appfilter (oafd) =========="
-          make package/open-app-filter/compile -j$(nproc) V=s || make package/open-app-filter/compile -j1 V=s
+          sudo make package/open-app-filter/compile -j$(nproc) V=s || sudo make package/open-app-filter/compile -j1 V=s
           echo "========== compile luci-app-oaf =========="
-          make package/luci-app-oaf/compile -j$(nproc) V=s || make package/luci-app-oaf/compile -j1 V=s
+          sudo make package/luci-app-oaf/compile -j$(nproc) V=s || sudo make package/luci-app-oaf/compile -j1 V=s
           sudo chmod 777 -R .
           echo "status=success" >> "$GITHUB_OUTPUT"
 
