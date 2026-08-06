@@ -73,7 +73,7 @@ permissions:
 
 jobs:
   job_build:
-    name: Build OAF [${{ inputs.target }} / ${{ inputs.openwrt_version }}]
+    name: Build OAF [${{ inputs.target || 'rockchip/armv8' }} / ${{ inputs.openwrt_version || '25.12.4' }}]
     runs-on: ubuntu-latest
     timeout-minutes: 180
     steps:
@@ -105,10 +105,14 @@ jobs:
             sdk_url="${{ inputs.custom_sdk_url }}"
             echo "Using custom SDK URL"
           else
-            if [ "${{ inputs.openwrt_version }}" = "snapshots" ]; then
-              base_url="https://downloads.openwrt.org/${{ inputs.openwrt_version }}/targets/${{ inputs.target }}/"
+            OWRT_VERSION="${{ inputs.openwrt_version || '25.12.4' }}"
+            OWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
+            echo "OWRT_VERSION=${OWRT_VERSION}" >> "$GITHUB_ENV"
+            echo "OWRT_TARGET=${OWRT_TARGET}" >> "$GITHUB_ENV"
+            if [ "${OWRT_VERSION}" = "snapshots" ]; then
+              base_url="https://downloads.openwrt.org/${OWRT_VERSION}/targets/${OWRT_TARGET}/"
             else
-              base_url="https://downloads.openwrt.org/releases/${{ inputs.openwrt_version }}/targets/${{ inputs.target }}/"
+              base_url="https://downloads.openwrt.org/releases/${OWRT_VERSION}/targets/${OWRT_TARGET}/"
             fi
             sdk_file=$(curl -s "$base_url" | grep -oE 'openwrt-sdk-[^"<>]*\.tar\.(zst|xz)' | sort -u | tail -n1)
             if [ -z "$sdk_file" ]; then
@@ -148,7 +152,8 @@ jobs:
 
           # Pin packages/luci feeds to the branch matching the selected OpenWrt version
           branch="master"
-          case "${{ inputs.openwrt_version }}" in
+          OWRT_VERSION="${{ inputs.openwrt_version || '25.12.4' }}"
+          case "${OWRT_VERSION}" in
             25.12*) branch="openwrt-25.12" ;;
             24.10*) branch="openwrt-24.10" ;;
           esac
@@ -161,7 +166,6 @@ jobs:
           cat feeds.conf.default
           ./scripts/feeds update -a
           ./scripts/feeds update -i
-          ./scripts/feeds update oaf packages luci
           ./scripts/feeds install -a
 
       - name: SSH connection to Actions
@@ -171,18 +175,7 @@ jobs:
       - name: Configure .config
         run: |
           cd sdk
-          curl https://raw.githubusercontent.com/Fido6/OpenAppFilter/refs/heads/master/.config > .config
-          #echo "CONFIG_ALL_NONSHARED=n" > .config
-          #echo "CONFIG_ALL_KMODS=n" >> .config
-          #echo "CONFIG_ALL=n" >> .config
-          #echo "CONFIG_AUTOREMOVE=n" >> .config
-          #echo "CONFIG_SIGNED_PACKAGES=n" >> .config
-          #echo "CONFIG_PACKAGE_luci-app-oaf=m" >> .config
-          #echo "CONFIG_PACKAGE_appfilter=m" >> .config
-          #echo "CONFIG_PACKAGE_kmod-oaf=m" >> .config
-          # 必须启用以下内容，不然编译时报错缺失lua.h
-          echo "CONFIG_PACKAGE_luci-compat=y" >> .config
-          echo "CONFIG_PACKAGE_lua5.4=y" >> .config
+          echo "CONFIG_PACKAGE_luci-app-oaf=m" > .config
           echo "CONFIG_LUCI_LANG_zh_Hans=y" >> .config
           make defconfig
           make package/base-files/compile -j$(nproc)
@@ -192,37 +185,17 @@ jobs:
         id: compile
         run: |
           cd sdk
-          echo "========== check staging =========="
-
-          find staging_dir -name libubox
-
-          find staging_dir -name lua
-
-          echo "===== SDK package targets ====="
-          make -qp | grep "^package/.*lua.*/compile" | head -20
-
-          echo "===== staging headers ====="
-          find staging_dir -name uloop.h
-          find staging_dir -name lua.h
-
-          echo "===== installed packages ====="
-          ls staging_dir/target-*/pkginfo | grep -E "lua|libubox|luci"
-
-          echo "=========== end =============="
           if [ ! -d package/feeds/oaf ]; then
             echo "::error::OAF feed is not installed. Check the 'Configure feeds' step log."
             exit 1
           fi
-          # Build lua first to ensure lua.h is available in the staging directory
-          # (lucihttp, a dependency of luci-app-oaf, requires lua.h at compile time)
-          echo "========== compile lua (dependency for luci-app-oaf) =========="
-          make package/lua/compile -j$(nproc) V=s || make package/lua/compile -j1 V=s
-          echo "========== compile luci-app-oaf =========="
-          make package/luci-app-oaf/compile -j$(nproc) V=s || make package/luci-app-oaf/compile -j1 V=s
-          echo "========== compile appfilter (oafd) =========="
-          make package/open-app-filter/compile -j$(nproc) V=s || make package/open-app-filter/compile -j1 V=s
           echo "========== compile kmod-oaf =========="
           make package/oaf/compile -j$(nproc) V=s || make package/oaf/compile -j1 V=s
+          echo "========== compile appfilter (oafd) =========="
+          make package/open-app-filter/compile -j$(nproc) V=s || make package/open-app-filter/compile -j1 V=s
+          echo "========== compile luci-app-oaf =========="
+          make package/luci-app-oaf/compile -j$(nproc) V=s || make package/luci-app-oaf/compile -j1 V=s
+
           echo "status=success" >> "$GITHUB_OUTPUT"
 
       - name: Organize artifacts
@@ -242,11 +215,13 @@ jobs:
 
           kernel_ver=$(grep -m1 '^LINUX_VERSION[[:space:]]*:=' include/kernel-version.mk | awk '{print $3}')
           [ -z "$kernel_ver" ] && kernel_ver="unknown"
+          OWRT_VERSION="${{ inputs.openwrt_version || '25.12.4' }}"
+          OWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
           cat > upload/build_info.txt <<EOF
           Repository: ${{ github.repository }} @ ${{ github.sha }}
           Built At: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          OpenWrt Version: ${{ inputs.openwrt_version }}
-          Target: ${{ inputs.target }}
+          OpenWrt Version: ${OWRT_VERSION}
+          Target: ${OWRT_TARGET}
           Kernel Version: ${kernel_ver}
           SDK URL: ${SDK_URL}
           Packages: kmod-oaf (kernel DPI module), appfilter (oafd daemon), luci-app-oaf (LuCI UI)
@@ -259,16 +234,16 @@ jobs:
             exit 1
           fi
 
-          target_safe=$(echo "${{ inputs.target }}" | tr '/' '-')
+          target_safe=$(echo "${OWRT_TARGET}" | tr '/' '-')
           echo "TARGET_SAFE=$target_safe" >> "$GITHUB_ENV"
-          zip -jr "upload/oaf_${target_safe}_${{ inputs.openwrt_version }}.zip" upload/*.ipk upload/build_info.txt
+          zip -jr "upload/oaf_${target_safe}_${OWRT_VERSION}.zip" upload/*.ipk upload/build_info.txt
           echo "status=success" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
         if: steps.organize.outputs.status == 'success'
         uses: actions/upload-artifact@v4
         with:
-          name: oaf-${{ env.TARGET_SAFE }}-${{ inputs.openwrt_version }}
+          name: oaf-${{ env.TARGET_SAFE }}-${{ inputs.openwrt_version || '25.12.4' }}
           path: |
             sdk/upload/*.ipk
             sdk/upload/*.zip
@@ -287,6 +262,6 @@ jobs:
             sdk/upload/*.zip
           body: |
             OpenAppFilter packages built with OpenWrt SDK
-            - OpenWrt: ${{ inputs.openwrt_version }}
-            - Target: ${{ inputs.target }}
+            - OpenWrt: ${{ inputs.openwrt_version || '25.12.4' }}
+            - Target: ${{ inputs.target || 'rockchip/armv8' }}
             - Commit: ${{ github.sha }}
