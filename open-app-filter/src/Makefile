@@ -21,10 +21,10 @@ LDLIBS += \
 all: $(EXEC)
 
 $(EXEC): $(OBJS)
-    $(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
 
 %.o: %.c
-    $(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
+	$(CC) $(CPPFLAGS) $(CFLAGS) -c $< -o $@
 
 clean:
-    rm -f $(EXEC) $(OBJS)
+	rm -f $(EXEC) $(OBJS)
