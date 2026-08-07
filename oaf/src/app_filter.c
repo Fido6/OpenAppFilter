@@ -928,6 +928,7 @@ static int af_match_by_pos(flow_info_t *flow, af_feature_node_t *node)
 static int af_match_by_url(flow_info_t *flow, af_feature_node_t *node)
 {
 	char reg_url_buf[MAX_URL_MATCH_LEN] = {0};
+	char ip_str[32] = {0};
 
 	if (!flow || !node)
 		return AF_FALSE;
@@ -945,6 +946,12 @@ static int af_match_by_url(flow_info_t *flow, af_feature_node_t *node)
 			strncpy(reg_url_buf, flow->http.host_pos, MAX_URL_MATCH_LEN - 1);
 		else
 			strncpy(reg_url_buf, flow->http.host_pos, flow->http.host_len);
+	}
+	/* fallback: match against destination IP when no host/sni extracted.
+	 * this allows custom rules like ||1.1.1.1^ to block DNS-over-HTTPS. */
+	if (strlen(reg_url_buf) == 0 && flow->dst) {
+		snprintf(ip_str, sizeof(ip_str), NIPQUAD_FMT, NIPQUAD(flow->dst));
+		strncpy(reg_url_buf, ip_str, MAX_URL_MATCH_LEN - 1);
 	}
 	if (strlen(reg_url_buf) > 0 && strlen(node->host_url) > 0 && regexp_match(node->host_url, reg_url_buf))
 	{
@@ -1269,6 +1276,7 @@ static int update_url_visiting_info(af_client_info_t *client, flow_info_t *flow)
 {
 	char *host = NULL;
 	unsigned int len = 0;
+	char ip_fallback[32] = {0};
     if (!client || !flow)
         return -1;
 	
@@ -1279,6 +1287,14 @@ static int update_url_visiting_info(af_client_info_t *client, flow_info_t *flow)
     else if (flow->http.match){
         host = flow->http.host_pos;
         len = flow->http.host_len;
+    }
+    /* fallback: use destination IP address when no host/sni extracted.
+     * this enables visiting URL tracking for IP-based connections
+     * such as DNS-over-HTTPS (1.1.1.1, 8.8.8.8, etc.). */
+    if (!host && flow->dst) {
+        snprintf(ip_fallback, sizeof(ip_fallback), NIPQUAD_FMT, NIPQUAD(flow->dst));
+        host = ip_fallback;
+        len = strlen(ip_fallback);
     }
     if (!host || len < MIN_REPORT_URL_LEN || len >= MAX_REPORT_URL_LEN)
         return -1;
