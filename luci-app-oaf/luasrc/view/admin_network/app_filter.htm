@@ -62,7 +62,7 @@
         -webkit-appearance: none;
         -moz-appearance: none;
         appearance: none;
-        border: 1px solid #aca9a9;
+        border: 1px solid var(--oaf-checkbox-border);
     }
     .app-item img {
         vertical-align: middle;
@@ -96,8 +96,8 @@
     }
 
     .select-all-btn {
-        background-color: #4CAF50;
-        color: white;
+        background-color: var(--oaf-success);
+        color: var(--oaf-text-on-success);
         border: none;
         padding: 4px 8px;
         border-radius: 3px;
@@ -107,15 +107,15 @@
     }
 
     .select-all-btn:hover {
-        background-color: #45a049;
+        background-color: var(--oaf-success-dark);
     }
 
     .select-all-btn.selected {
-        background-color: #f44336;
+        background-color: var(--oaf-danger);
     }
 
     .select-all-btn.selected:hover {
-        background-color: #da190b;
+        background-color: var(--oaf-danger-dark);
     }
 
     .select-all-container {
@@ -200,7 +200,7 @@
         width: 16px;
         height: 16px;
         border-radius: 50%;
-        background-color: #9aa0a6;
+        background-color: var(--oaf-text-muted-alt);
         color: white;
         font-size: 11px;
         font-weight: bold;
@@ -208,14 +208,14 @@
     }
     
     .help-icon:hover .help-question {
-        background-color: #5f6368;
+        background-color: var(--oaf-text-muted);
     }
     
     .help-tooltip {
         visibility: hidden;
         width: 280px;
-        background-color: #3c4043;
-        color: #fff;
+        background-color: var(--oaf-bg-card);
+        color: var(--oaf-text-on-bg-card);
         text-align: left;
         border-radius: 4px;
         padding: 12px;
@@ -239,7 +239,7 @@
         margin-left: -6px;
         border-width: 6px;
         border-style: solid;
-        border-color: transparent transparent #3c4043 transparent;
+        border-color: transparent transparent var(--oaf-bg-card) transparent;
     }
     
     .help-icon:hover .help-tooltip {

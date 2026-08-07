@@ -26,9 +26,9 @@
     table.imagetable {
         font-family: verdana, arial, sans-serif;
         font-size: 11px;
-        color: #333333;
+        color: var(--oaf-h1-h2-color);
         border-width: 1px;
-        border-color: #999999;
+        border-color: var(--oaf-border-low);
         border-collapse: collapse;
         padding-top: 10px;
     }
@@ -140,7 +140,7 @@
                 align: 'left',
                 top: 'middle',
                 textStyle: {
-                    color: '#8C8C8C'
+                    color: getComputedStyle(document.documentElement).getPropertyValue('--oaf-text-muted').trim() || '#8C8C8C'
                 },
                 height: 250
             },

@@ -1,42 +1,178 @@
+/* OAF Theme Variables - Light Mode (Default) */
+:root {
+    /* Primary */
+    --oaf-primary: #2885e8;
+    --oaf-primary-dark: #1a70d2;
+    --oaf-text-on-primary: #ffffff;
+    
+    /* Success */
+    --oaf-success: #4CAF50;
+    --oaf-success-dark: #45a049;
+    --oaf-text-on-success: #ffffff;
+    
+    /* Danger */
+    --oaf-danger: #f44336;
+    --oaf-danger-dark: #da190b;
+    --oaf-danger-alt: #ea4335;
+    --oaf-text-on-danger: #ffffff;
+    
+    /* Warning */
+    --oaf-warning-bg: #fff3cd;
+    --oaf-warning-border: #ffc107;
+    --oaf-warning-text: #856404;
+    
+    /* Neutral */
+    --oaf-slider-bg: #cccccc;
+    --oaf-slider-knob-bg: #ffffff;
+    --oaf-checked-slider-bg: #2196F3;
+    --oaf-h1-h2-color: #333;
+    --oaf-border-low: #e5e7eb;
+    --oaf-border-medium: #d1d5db;
+    --oaf-bg-high: #ffffff;
+    --oaf-bg-low: #f5f5f5;
+    --oaf-bg-card: #3c4043;
+    --oaf-text-on-bg-card: #ffffff;
+    --oaf-checkbox-border: #aca9a9;
+    --oaf-text-muted: #666;
+    --oaf-text-muted-alt: #9aa0a6;
+    --oaf-progress-bg: #d1d5db;
+    --oaf-progress-fill: #1a73e8;
+    --oaf-offline-color: #A9A9A9;
+    --oaf-active-color: #1a73e8;
+    --oaf-alert-border: #e8a317;
+    --oaf-table-border: #ddd;
+    --oaf-text-used: #d93025;
+    --oaf-link-color: #2885e8;
+}
 
+/* OAF Theme Variables - Dark Mode */
+body.dark {
+    --oaf-primary: #2b8bf5;
+    --oaf-primary-dark: #1a70d2;
+    --oaf-text-on-primary: #e0e0e0;
+    
+    --oaf-success: #66BB6A;
+    --oaf-success-dark: #45a049;
+    --oaf-text-on-success: #1a1a1a;
+    
+    --oaf-danger: #ef5350;
+    --oaf-danger-dark: #c5221f;
+    --oaf-danger-alt: #ef5350;
+    --oaf-text-on-danger: #1a1a1a;
+    
+    --oaf-warning-bg: #3d3421;
+    --oaf-warning-border: #ffc107;
+    --oaf-warning-text: #f5f5f5;
+    
+    --oaf-slider-bg: #555555;
+    --oaf-slider-knob-bg: #222222;
+    --oaf-checked-slider-bg: #2b8bf5;
+    --oaf-h1-h2-color: #e0e0e0;
+    --oaf-border-low: #444444;
+    --oaf-border-medium: #555555;
+    --oaf-bg-high: #2a2a2a;
+    --oaf-bg-low: #1e1e1e;
+    --oaf-bg-card: #3c4043;
+    --oaf-text-on-bg-card: #ffffff;
+    --oaf-checkbox-border: #666666;
+    --oaf-text-muted: #aaaaaa;
+    --oaf-text-muted-alt: #aaaaaa;
+    --oaf-progress-bg: #555555;
+    --oaf-progress-fill: #2b8bf5;
+    --oaf-offline-color: #888888;
+    --oaf-active-color: #2b8bf5;
+    --oaf-alert-border: #ffc107;
+    --oaf-table-border: #555555;
+    --oaf-text-used: #ef5350;
+    --oaf-link-color: #2b8bf5;
+}
+
+/* =================== Base Styles =================== */
 body {
     font-family: Arial, sans-serif;
 }
+
 h1, h2 {
-    color: #333;
+    color: var(--oaf-h1-h2-color);
 }
 
-
-
-.button-check {
-    padding: 3px 8px;
-    background-color: transparent; 
-    color: green; 
-    border: 1px solid green; 
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-}
+/* =================== Button Container =================== */
 .button-container {
     display: flex;
     justify-content: right; 
     margin-top: 5px; 
 }
 
+/* =================== Submit Button =================== */
 .submit-button {
     margin-top: 30px;
     width: 150px; 
     height: 30px; 
-    background-color: #2885e8;
-    color: white;
+    background-color: var(--oaf-primary);
+    color: var(--oaf-text-on-primary);
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 .submit-button:hover {
-    background-color: #0f77e6;
+    background-color: var(--oaf-primary-dark);
 }
 
+/* =================== Button Check =================== */
+.button-check {
+    padding: 3px 8px;
+    background-color: transparent;
+    color: var(--oaf-success);
+    border: 1px solid var(--oaf-success);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.button-check:hover {
+    background-color: var(--oaf-bg-low);
+    border-color: var(--oaf-primary);
+    color: var(--oaf-primary-dark);
+}
+
+/* =================== Select All Button =================== */
+.select-all-btn {
+    background-color: var(--oaf-success);
+    color: var(--oaf-text-on-success);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+}
+.select-all-btn:hover {
+    background-color: var(--oaf-success-dark);
+}
+.select-all-btn.selected {
+    background-color: var(--oaf-danger);
+}
+.select-all-btn.selected:hover {
+    background-color: var(--oaf-danger-dark);
+}
+
+/* =================== Select All Container =================== */
+.select-all-container {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--oaf-border-low);
+    width: 100%;
+    gap: 5px;
+}
+
+.select-all-label {
+    font-size: 12px;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+/* =================== Switch =================== */
 .switch {
     position: relative;
     display: inline-block;
@@ -57,7 +193,7 @@ h1, h2 {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
+    background-color: var(--oaf-slider-bg);
     transition: .4s;
     border-radius: 20px;
 }
@@ -69,15 +205,203 @@ h1, h2 {
     width: 16px;
     left: 2px;
     bottom: 2px;
-    background-color: white;
+    background-color: var(--oaf-slider-knob-bg);
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: #2196F3;
+    background-color: var(--oaf-checked-slider-bg);
 }
 
 input:checked + .slider:before {
     transform: translateX(20px);
+}
+
+/* =================== Checkbox =================== */
+.app-item input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+    position: relative;
+    top: 0;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 1px solid var(--oaf-checkbox-border);
+}
+
+/* =================== Help Icon =================== */
+.help-icon {
+    position: relative;
+    display: inline-block;
+    margin-left: 8px;
+    cursor: help;
+    vertical-align: middle;
+}
+
+.help-question {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: var(--oaf-text-muted-alt);
+    color: white;
+    font-size: 10px;
+}
+
+.help-icon:hover .help-question {
+    background-color: var(--oaf-text-muted);
+}
+
+.help-tip {
+    display: none;
+    position: absolute;
+    width: 280px;
+    background-color: var(--oaf-bg-card);
+    color: var(--oaf-text-on-bg-card);
+    text-align: left;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.help-tip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: -8px;
+    margin-top: -6px;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 6px 8px 6px 0;
+    border-color: transparent var(--oaf-bg-card) transparent transparent;
+}
+
+.help-icon:hover .help-tip {
+    display: block;
+}
+
+/* =================== Status Module =================== */
+.status-module {
+    border: 1px solid var(--oaf-border-low);
+    border-radius: 8px;
+}
+
+/* =================== View Dialog =================== */
+.view-dialog-content {
+    background-color: var(--oaf-bg-high);
+    border-radius: 8px;
+}
+
+/* =================== User List Table =================== */
+.user-list-table th {
+    background-color: var(--oaf-bg-low);
+    font-weight: bold;
+}
+
+/* =================== Progress Bar =================== */
+.time-progress-bar {
+    height: 6px;
+    background-color: var(--oaf-progress-bg);
+    border-radius: 3px;
+    margin-top: 5px;
+}
+
+.time-progress-fill {
+    height: 6px;
+    border-radius: 3px;
+    background-color: var(--oaf-progress-fill);
+    transition: width 0.5s ease;
+}
+
+.time-progress-text {
+    font-size: 12px;
+    color: var(--oaf-text-muted);
+    opacity: 0.9;
+}
+
+.time-progress-text-used {
+    color: var(--oaf-text-used);
+}
+
+/* =================== Clear Time Button =================== */
+.clear-time-btn {
+    padding: 4px 12px;
+    background-color: var(--oaf-danger-alt);
+    color: var(--oaf-text-on-danger);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+.clear-time-btn:hover {
+    background-color: var(--oaf-danger-dark);
+}
+
+/* =================== Warning Box =================== */
+.warning-box {
+    display: none;
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    background-color: var(--oaf-warning-bg);
+    border-left: 3px solid var(--oaf-warning-border);
+}
+
+.warning-box span {
+    color: var(--oaf-warning-text);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+/* =================== Alert Box =================== */
+.alert-box {
+    border: 1px solid var(--oaf-danger);
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.alert-box-header {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--oaf-primary);
+    margin-bottom: 10px;
+}
+
+/* =================== Table =================== */
+.table-cell {
+    border: 1px solid var(--oaf-table-border);
+    padding: 8px;
+    text-align: center;
+}
+
+/* =================== Offline Status =================== */
+.offline-text {
+    color: var(--oaf-offline-color);
+}
+
+/* =================== Active Status =================== */
+.active-text {
+    color: var(--oaf-active-color);
+}
+
+/* =================== Alert Border =================== */
+.alert-border {
+    border-left: 3px solid var(--oaf-alert-border);
+}
+
+/* =================== Link Color =================== */
+.link-color {
+    color: var(--oaf-link-color);
 }
