@@ -7,8 +7,8 @@
 name: "Auto compile with openwrt sdk"
 
 on:
-  push:
-    branches: [ "master" ]
+  # push:
+  #   branches: [ "master" ]
   workflow_dispatch:
     inputs:
       openwrt_version:
@@ -168,9 +168,9 @@ jobs:
           ./scripts/feeds update -i
           ./scripts/feeds install -a
 
-      - name: SSH connection to Actions
-        uses: mxschmitt/action-tmate@v3
-        if: inputs.ssh == 'true'
+      # - name: SSH connection to Actions
+      #   uses: mxschmitt/action-tmate@v3
+      #   if: inputs.ssh == 'true'
 
       - name: Configure .config
         run: |
@@ -181,6 +181,11 @@ jobs:
           # make package/base-files/compile -j$(nproc)
           # make prepare
 
+
+      - name: SSH connection to Actions
+        uses: mxschmitt/action-tmate@v3
+        if: inputs.ssh == 'true'
+        
       - name: Compile OAF packages
         id: compile
         run: |
