@@ -25,6 +25,7 @@ function index()
 	entry({"admin", "network", "user_status"}, call("user_status"), nil).leaf = true
 	entry({"admin", "network", "get_user_list"}, call("get_user_list"), nil).leaf = true
 	entry({"admin", "network", "dev_visit_list"}, call("get_dev_visit_list"), nil).leaf = true
+	entry({"admin", "network", "dev_domain_list"}, call("get_dev_domain_list"), nil).leaf = true
 	entry({"admin", "network", "feature_upgrade"}, call("handle_feature_upgrade"), nil).leaf = true
 	entry({"admin", "network", "dev_visit_time"}, call("get_dev_visit_time"), nil).leaf = true
 	entry({"admin", "network", "app_class_visit_time"}, call("get_app_class_visit_time"), nil).leaf = true
@@ -446,6 +447,23 @@ function get_dev_visit_list(mac)
 		req_obj.page_size = page_size
 	end
 	local resp_obj=utl.ubus("appfilter", "dev_visit_list", req_obj);
+	luci.http.write_json(resp_obj);
+end
+
+function get_dev_domain_list()
+	local json = require "luci.jsonc"
+	luci.http.prepare_content("application/json")
+	local mac = luci.http.formvalue("mac")
+	local page = luci.http.formvalue("page")
+	local page_size = luci.http.formvalue("page_size")
+	local req_obj = {mac=mac}
+	if page then
+		req_obj.page = page
+	end
+	if page_size then
+		req_obj.page_size = page_size
+	end
+	local resp_obj=utl.ubus("appfilter", "dev_domain_list", req_obj);
 	luci.http.write_json(resp_obj);
 end
 

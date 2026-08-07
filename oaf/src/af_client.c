@@ -298,6 +298,31 @@ static int __af_visit_info_report(af_client_info_t *node)
 	}
 
 	cJSON_AddItemToObject(root_obj, "visit_info", visit_info_array);
+
+	/* Append domain-level visit records */
+	{
+		cJSON *domain_array = cJSON_CreateArray();
+		int domain_count = 0;
+		for (i = 0; i < node->domain_visit_num && domain_count < MAX_DOMAIN_VISIT_NUM; i++) {
+			if (node->domain_visit[i].app_id == 0 || strlen(node->domain_visit[i].url) == 0)
+				continue;
+			if (domain_count >= 8) /* limit per report to 8 to avoid msg overflow */
+				break;
+			cJSON *d_obj = cJSON_CreateObject();
+			cJSON_AddNumberToObject(d_obj, "appid", node->domain_visit[i].app_id);
+			cJSON_AddStringToObject(d_obj, "url", node->domain_visit[i].url);
+			cJSON_AddNumberToObject(d_obj, "latest_time", node->domain_visit[i].latest_time);
+			cJSON_AddNumberToObject(d_obj, "latest_action", node->domain_visit[i].latest_action);
+			cJSON_AddNumberToObject(d_obj, "up_bytes", node->domain_visit[i].up_bytes);
+			cJSON_AddNumberToObject(d_obj, "down_bytes", node->domain_visit[i].down_bytes);
+			cJSON_AddItemToArray(domain_array, d_obj);
+			/* reset flow counters after report */
+			node->domain_visit[i].up_bytes = 0;
+			node->domain_visit[i].down_bytes = 0;
+			domain_count++;
+		}
+		cJSON_AddItemToObject(root_obj, "domain_info", domain_array);
+	}
 	out = cJSON_Print(root_obj);
 	if (!out) {
 		cJSON_Delete(root_obj);

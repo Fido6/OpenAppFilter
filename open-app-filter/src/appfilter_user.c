@@ -67,6 +67,141 @@ void add_visit_info_node(visit_info_t **head, visit_info_t *node)
     }
 }
 
+unsigned int hash_domain(int appid, const char *url)
+{
+    unsigned int hash = appid * 31;
+    int i;
+    if (!url)
+        return hash & (MAX_VISIT_HASH_SIZE - 1);
+    for (i = 0; url[i] != '\0' && i < MAX_REPORT_URL_LEN; i++) {
+        hash = hash * 31 + url[i];
+    }
+    return hash & (MAX_VISIT_HASH_SIZE - 1);
+}
+
+void add_domain_info_node(visit_domain_info_t **head, visit_domain_info_t *node)
+{
+    if (*head == NULL)
+    {
+        *head = node;
+    }
+    else
+    {
+        node->next = *head;
+        *head = node;
+    }
+}
+
+visit_domain_info_t *find_domain_node(dev_node_t *dev, int appid, const char *url)
+{
+    unsigned int hash;
+    visit_domain_info_t *p;
+    if (!dev || !url)
+        return NULL;
+    hash = hash_domain(appid, url);
+    p = dev->domain_htable[hash];
+    while (p)
+    {
+        if (p->appid == appid && strcmp(p->url, url) == 0)
+        {
+            return p;
+        }
+        p = p->next;
+    }
+    return NULL;
+}
+
+visit_domain_info_t *find_or_add_domain_node(dev_node_t *dev, int appid, const char *url)
+{
+    unsigned int hash;
+    visit_domain_info_t *node;
+    if (!dev || !url || strlen(url) == 0)
+        return NULL;
+    node = find_domain_node(dev, appid, url);
+    if (node)
+        return node;
+    hash = hash_domain(appid, url);
+    node = (visit_domain_info_t *)calloc(1, sizeof(visit_domain_info_t));
+    if (!node)
+        return NULL;
+    node->appid = appid;
+    strncpy(node->url, url, sizeof(node->url));
+    node->next = NULL;
+    add_domain_info_node(&dev->domain_htable[hash], node);
+    return node;
+}
+
+void flush_expire_domain_info(dev_node_t *dev)
+{
+    int i;
+    u_int32_t cur_time;
+    visit_domain_info_t *p, *prev, *tmp;
+    if (!dev)
+        return;
+    cur_time = get_timestamp();
+    for (i = 0; i < MAX_VISIT_HASH_SIZE; i++)
+    {
+        prev = NULL;
+        p = dev->domain_htable[i];
+        while (p)
+        {
+            tmp = p->next;
+            /* expire domain records older than 24h */
+            if (cur_time > p->latest_time && (cur_time - p->latest_time) > SECONDS_PER_DAY)
+            {
+                if (prev)
+                    prev->next = tmp;
+                else
+                    dev->domain_htable[i] = tmp;
+                free(p);
+            }
+            else
+            {
+                prev = p;
+            }
+            p = tmp;
+        }
+    }
+}
+
+void clean_invalid_domain_records(void)
+{
+    int i;
+    dev_node_t *node;
+    visit_domain_info_t *p, *prev, *tmp;
+    for (i = 0; i < MAX_DEV_NODE_HASH_SIZE; i++)
+    {
+        node = dev_hash_table[i];
+        while (node)
+        {
+            int j;
+            for (j = 0; j < MAX_VISIT_HASH_SIZE; j++)
+            {
+                prev = NULL;
+                p = node->domain_htable[j];
+                while (p)
+                {
+                    tmp = p->next;
+                    if (strlen(get_app_name_by_id(p->appid)) == 0)
+                    {
+                        if (prev)
+                            prev->next = tmp;
+                        else
+                            node->domain_htable[j] = tmp;
+                        free(p);
+                    }
+                    else
+                    {
+                        prev = p;
+                    }
+                    p = tmp;
+                }
+            }
+            node = node->next;
+        }
+    }
+}
+
 void init_dev_node_htable()
 {
     int i;

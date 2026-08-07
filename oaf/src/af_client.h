@@ -32,6 +32,7 @@ enum NFC_PKT_DIR
 #define MAX_RECORD_APP_NUM 64
 #define MIN_REPORT_URL_LEN 4
 #define MAX_REPORT_URL_LEN 64
+#define MAX_DOMAIN_VISIT_NUM 24
 
 typedef struct flow_stat
 {
@@ -56,6 +57,16 @@ typedef struct app_visit_info
 	unsigned long latest_time;
 	unsigned int latest_action;
 } app_visit_info_t;
+
+typedef struct app_domain_visit_info
+{
+	unsigned int app_id;
+	char url[MAX_REPORT_URL_LEN];
+	unsigned long latest_time;
+	unsigned int latest_action;
+	long long up_bytes;
+	long long down_bytes;
+} app_domain_visit_info_t;
 
 typedef struct visiting_info{
     int visiting_app;
@@ -85,6 +96,8 @@ typedef struct af_client_info
 	int timer_count;
 	int report_count;
 	app_visit_info_t visit_info[MAX_RECORD_APP_NUM];
+	app_domain_visit_info_t domain_visit[MAX_DOMAIN_VISIT_NUM];
+	int domain_visit_num;
 } af_client_info_t;
 
 int af_client_init(void);

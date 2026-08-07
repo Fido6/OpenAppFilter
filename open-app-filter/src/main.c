@@ -743,6 +743,7 @@ int reload_feature(void){
     }
     load_custom_rules();
     clean_invalid_app_records();
+    clean_invalid_domain_records();
     clear_device_app_statistics();
     LOG_WARN("reload feature success\n");
     g_feature_update_time = get_timestamp();

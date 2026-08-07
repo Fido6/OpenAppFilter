@@ -53,7 +53,7 @@ u_int32_t g_update_jiffies = 0;
 
 #define SET_APPID(mark, appid) (mark = appid)
 #define GET_APPID(mark) (mark)
-#define MAX_OAF_NETLINK_MSG_LEN 1024
+#define MAX_OAF_NETLINK_MSG_LEN 4096
 #define MAX_AF_SUPPORT_DATA_LEN 3000
 #define MAX_HOST_LEN 64
 #define MIN_HOST_LEN 4
@@ -1160,6 +1160,72 @@ static int af_update_client_app_info(af_client_info_t *node, int app_id, int dro
 	return 0;
 }
 
+static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int drop,
+									   unsigned int pkt_len, int pkt_dir)
+{
+	int i;
+	int index = -1;
+	unsigned long oldest_time = ~0UL;
+	unsigned long cur_time;
+	const char *url;
+	int oldest_index = -1;
+
+	if (!node || app_id <= 0)
+		return -1;
+
+	url = node->visiting.visiting_url;
+	if (strlen(url) < MIN_REPORT_URL_LEN || strlen(url) >= MAX_REPORT_URL_LEN)
+		return -1;
+
+	cur_time = af_get_timestamp_sec();
+
+	/* try to find existing (app_id, url) record */
+	for (i = 0; i < node->domain_visit_num; i++) {
+		if (node->domain_visit[i].app_id == app_id &&
+			strcmp(node->domain_visit[i].url, url) == 0) {
+			index = i;
+			break;
+		}
+	}
+
+	if (index < 0) {
+		if (node->domain_visit_num < MAX_DOMAIN_VISIT_NUM) {
+			index = node->domain_visit_num;
+			node->domain_visit_num++;
+		} else {
+			/* full: evict oldest record */
+			for (i = 0; i < node->domain_visit_num; i++) {
+				if (node->domain_visit[i].latest_time < oldest_time) {
+					oldest_time = node->domain_visit[i].latest_time;
+					oldest_index = i;
+				}
+			}
+			if (oldest_index < 0)
+				return -1;
+			index = oldest_index;
+		}
+		memset(&node->domain_visit[index], 0, sizeof(app_domain_visit_info_t));
+		node->domain_visit[index].app_id = app_id;
+		strncpy(node->domain_visit[index].url, url, MAX_REPORT_URL_LEN - 1);
+	}
+
+	node->domain_visit[index].latest_time = cur_time;
+	node->domain_visit[index].latest_action = drop;
+	if (pkt_dir == PKT_DIR_UP)
+		node->domain_visit[index].up_bytes += pkt_len;
+	else
+		node->domain_visit[index].down_bytes += pkt_len;
+
+	return 0;
+}
+
+static inline int get_af_pkt_dir(struct net_device *dev)
+{
+	if (dev && strstr(dev->name, g_lan_ifname))
+		return PKT_DIR_UP;
+	return PKT_DIR_DOWN;
+}
+
 int af_send_msg_to_user(char *pbuf, uint16_t len);
 static __maybe_unused int af_match_bcast_packet(flow_info_t *f)
 {
@@ -1422,6 +1488,8 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	if (g_oaf_record_enable	){
 		if (!conn->ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
+			af_update_domain_visit_info(client, flow.app_id, flow.drop,
+										skb->len, get_af_pkt_dir(skb->dev));
 		}
 		else{
 			AF_LMT_DEBUG("update ignore appid = %d, drop = %d\n", flow.app_id, flow.drop);
@@ -1533,6 +1601,8 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 				AF_CLIENT_LOCK_W();
 				if (!flow.ignore){
 					af_update_client_app_info(client, app_id, ct_action);
+					af_update_domain_visit_info(client, app_id, ct_action,
+												skb->len, get_af_pkt_dir(dev));
 				}
 				else{
 					AF_LMT_DEBUG(" ignore appid = %d, drop = %d, not update status\n", app_id, ct_action);
@@ -1638,6 +1708,8 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		AF_CLIENT_LOCK_W();
 		if (!flow.ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
+			af_update_domain_visit_info(client, flow.app_id, flow.drop,
+										skb->len, get_af_pkt_dir(dev));
 		}
 
 		AF_CLIENT_UNLOCK_W();

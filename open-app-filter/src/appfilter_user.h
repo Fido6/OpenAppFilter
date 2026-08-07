@@ -52,6 +52,17 @@ typedef struct visit_info
     struct visit_info *next;
 } visit_info_t;
 
+typedef struct visit_domain_info
+{
+    int appid;
+    char url[MAX_REPORT_URL_LEN];
+    u_int32_t latest_time;
+    int action;
+    unsigned long long up_flow;
+    unsigned long long down_flow;
+    struct visit_domain_info *next;
+} visit_domain_info_t;
+
 typedef struct visit_stat
 {
     u_int32_t total_time;
@@ -69,6 +80,7 @@ typedef struct dev_node
     u_int32_t offline_time;
     u_int32_t online_time;
     visit_info_t *visit_htable[MAX_VISIT_HASH_SIZE];
+    visit_domain_info_t *domain_htable[MAX_VISIT_HASH_SIZE];
     visit_stat_t stat[MAX_APP_TYPE][MAX_APP_ID_NUM]; // todo: list
     char visiting_url[MAX_REPORT_URL_LEN];
     int visiting_app;
@@ -107,6 +119,12 @@ void dump_dev_visit_list(void);
 dev_node_t *find_dev_node(char *mac);
 void dev_foreach(void *arg, iter_func iter);
 void add_visit_info_node(visit_info_t **head, visit_info_t *node);
+unsigned int hash_domain(int appid, const char *url);
+void add_domain_info_node(visit_domain_info_t **head, visit_domain_info_t *node);
+visit_domain_info_t *find_domain_node(dev_node_t *dev, int appid, const char *url);
+visit_domain_info_t *find_or_add_domain_node(dev_node_t *dev, int appid, const char *url);
+void flush_expire_domain_info(dev_node_t *dev);
+void clean_invalid_domain_records(void);
 void check_dev_visit_info_expire(void);
 void flush_expire_visit_info();
 int check_dev_expire(void);

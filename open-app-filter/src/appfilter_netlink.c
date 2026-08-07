@@ -213,6 +213,45 @@ void appfilter_nl_handler(struct uloop_fd *u, unsigned int ev)
         p->action = action;
         p->latest_time = cur_time;
     }
+
+    /* Parse domain-level visit records */
+    {
+        struct json_object *domain_array = json_object_object_get(root, "domain_info");
+        if (domain_array) {
+            int j;
+            for (j = 0; j < json_object_array_length(domain_array); j++) {
+                struct json_object *d_obj = json_object_array_get_idx(domain_array, j);
+                struct json_object *appid_obj = json_object_object_get(d_obj, "appid");
+                struct json_object *url_obj = json_object_object_get(d_obj, "url");
+                struct json_object *lt_obj = json_object_object_get(d_obj, "latest_time");
+                struct json_object *act_obj = json_object_object_get(d_obj, "latest_action");
+                struct json_object *up_obj = json_object_object_get(d_obj, "up_bytes");
+                struct json_object *down_obj = json_object_object_get(d_obj, "down_bytes");
+
+                if (!appid_obj || !url_obj)
+                    continue;
+
+                int d_appid = json_object_get_int(appid_obj);
+                const char *d_url = json_object_get_string(url_obj);
+
+                if (strlen(d_url) == 0)
+                    continue;
+
+                visit_domain_info_t *dnode = find_or_add_domain_node(node, d_appid, d_url);
+                if (dnode) {
+                    if (lt_obj)
+                        dnode->latest_time = json_object_get_int(lt_obj);
+                    if (act_obj)
+                        dnode->action = json_object_get_int(act_obj);
+                    if (up_obj)
+                        dnode->up_flow += (unsigned long long)json_object_get_int64(up_obj);
+                    if (down_obj)
+                        dnode->down_flow += (unsigned long long)json_object_get_int64(down_obj);
+                }
+            }
+        }
+    }
+
 EXIT:
     json_object_put(root);
 }

@@ -472,6 +472,7 @@
 			);
 
 			getVisitListData(mac, visit_cur_page, visit_page_size);
+			getDomainVisitListData(mac, 1, domain_visit_page_size);
 		}
 		
 		function getVisitListData(mac, page, size) {
@@ -491,7 +492,118 @@
 				}
 			);
 		}
-		
+
+		/* Domain visit list */
+		let domain_visit_cur_page = 1;
+		let domain_visit_page_size = 20;
+		let domain_visit_total_pages = 1;
+		let domain_visit_total_count = 0;
+
+		function getDomainVisitListData(mac, page, size) {
+			if (page === undefined) page = domain_visit_cur_page;
+			if (size === undefined) size = domain_visit_page_size;
+			new XHR().get('<%=url('admin/network/dev_domain_list')%>', {mac: mac, page: page, page_size: size},
+				function (x, st) {
+					if (st.total !== undefined) {
+						domain_visit_total_count = st.total;
+						domain_visit_total_pages = st.total_pages || 1;
+						domain_visit_cur_page = st.page || 1;
+						domain_visit_page_size = st.page_size || 20;
+					}
+					render_domain_visit_table(st);
+					updateDomainVisitPagination();
+				}
+			);
+		}
+
+		function render_domain_visit_table(data) {
+			var tb = document.getElementById('domain_visit_table');
+			var tbody = tb ? tb.querySelector('tbody') : null;
+			var list = data.list;
+			if (list && tbody) {
+				tbody.innerHTML = '';
+				for (var i = 0; i < list.length; i++) {
+					var tr = tbody.insertRow(-1);
+					tr.className = 'tr';
+
+					var iconSrc = list[i].icon === 0 ? '<%=resource%>/app_icons/default.png' : `<%=resource%>/app_icons/${list[i].appid}.png`;
+					tr.insertCell(-1).innerHTML = `
+						<div style="height: 24px; display: flex; align-items: center;">
+							<img src="${iconSrc}" alt="${list[i].name}" style="width: 20px; height: 20px; border-radius: 5px; margin-right: 4px;">
+							<span>${list[i].name}</span>
+						</div>
+					`;
+
+					tr.insertCell(-1).innerHTML = list[i].url || '--';
+
+					var lt_date = new Date(list[i].lt * 1000);
+					tr.insertCell(-1).innerHTML = lt_date.toLocaleString();
+
+					tr.insertCell(-1).innerHTML = formatFlow(list[i].up_flow || 0);
+					tr.insertCell(-1).innerHTML = formatFlow(list[i].down_flow || 0);
+
+					var action_status = list[i].act == 1 ?
+						'<span style="color: red;"><%:Filtered%></span>' :
+						'<span style="color: green;"><%:Unfiltered%></span>';
+					tr.insertCell(-1).innerHTML = action_status;
+
+					var childs = tr.childNodes;
+					Array.prototype.forEach.call(childs, function (child) {
+						child.className = 'td';
+					});
+				}
+			}
+		}
+
+		function updateDomainVisitPagination() {
+			var paginationDiv = document.getElementById('domainVisitPagination');
+			if (!paginationDiv || domain_visit_total_pages <= 0) {
+				if (paginationDiv) paginationDiv.innerHTML = '';
+				return;
+			}
+			var startPage = Math.max(1, domain_visit_cur_page - 5);
+			var endPage = Math.min(domain_visit_total_pages, domain_visit_cur_page + 5);
+			var pageCount = endPage - startPage + 1;
+			if (pageCount < 10) {
+				if (startPage == 1) {
+					endPage = Math.min(domain_visit_total_pages, startPage + 9);
+				} else if (endPage == domain_visit_total_pages) {
+					startPage = Math.max(1, endPage - 9);
+				}
+			}
+			var html = '<div style="display: flex; align-items: center; justify-content: center; margin-top: 20px; padding: 15px 0;">';
+			html += '<div style="display: flex; align-items: center; gap: 4px;">';
+			if (domain_visit_cur_page > 1) {
+				html += '<a href="javascript:void(0)" onclick="goToDomainVisitPage(' + (domain_visit_cur_page - 1) + ')" style="padding: 8px 12px; color: #1a73e8; text-decoration: none; cursor: pointer; border-radius: 4px;"><%:Previous%></a>';
+			} else {
+				html += '<span style="padding: 8px 12px; opacity: 0.4; cursor: default;"><%:Previous%></span>';
+			}
+			for (var i = startPage; i <= endPage; i++) {
+				if (i == domain_visit_cur_page) {
+					html += '<span style="padding: 8px 12px; color: #1a73e8; font-weight: 500; cursor: default; border-radius: 4px;">' + i + '</span>';
+				} else {
+					html += '<a href="javascript:void(0)" onclick="goToDomainVisitPage(' + i + ')" style="padding: 8px 12px; text-decoration: none; cursor: pointer; border-radius: 4px;">' + i + '</a>';
+				}
+			}
+			if (domain_visit_cur_page < domain_visit_total_pages) {
+				html += '<a href="javascript:void(0)" onclick="goToDomainVisitPage(' + (domain_visit_cur_page + 1) + ')" style="padding: 8px 12px; color: #1a73e8; text-decoration: none; cursor: pointer; border-radius: 4px;"><%:Next%></a>';
+			} else {
+				html += '<span style="padding: 8px 12px; opacity: 0.4; cursor: default;"><%:Next%></span>';
+			}
+			html += '</div>';
+			html += '<div style="margin-left: 20px; opacity: 0.6; font-size: 14px;">';
+			html += '<%:Total%>: ' + domain_visit_total_count + ' | <%:Page%>: ' + domain_visit_cur_page + ' / ' + domain_visit_total_pages;
+			html += '</div></div>';
+			paginationDiv.innerHTML = html;
+		}
+
+		function goToDomainVisitPage(page) {
+			if (page < 1) page = 1;
+			if (page > domain_visit_total_pages && domain_visit_total_pages > 0) page = domain_visit_total_pages;
+			domain_visit_cur_page = page;
+			getDomainVisitListData(current_mac, domain_visit_cur_page, domain_visit_page_size);
+		}
+
 		function updateVisitListPagination() {
 			var paginationDiv = document.getElementById('visitListPagination');
 			if (!paginationDiv || visit_total_pages <= 0) {
@@ -870,7 +982,8 @@
         <ul class="tab-list">
             <!-- <li class="tab-item onclick="showTabContent('tab1')">基本信息</li> -->
             <li class="tab-item active" onclick="showTabContent('tab2')"><%:App Statistics%></li>
-			<li class="tab-item" onclick="showTabContent('tab3')"><%:Access Records%></li>
+   <li class="tab-item" onclick="showTabContent('tab3')"><%:Access Records%></li>
+   <li class="tab-item" onclick="showTabContent('tab4')"><%:Domain Details%></li>
         </ul>
 
         <div id="tab2" class="tab-body active">
@@ -916,7 +1029,32 @@
 			<div id="visitListPagination" style="flex-shrink: 0; margin-top: 10px;"></div>
 		</div>
 
-    </div>
+		<div id="tab4" class="tab-body">
+			<div style="max-height: 320px; overflow-y: auto;padding-right: 20px;">
+				<table class="table cbi-section-table" id="domain_visit_table">
+					<thead>
+						<tr class="tr table-titles">
+							<th class="th"><%:App Name%></th>
+							<th class="th"><%:Domain%></th>
+							<th class="th"><%:Last Visit Time%></th>
+							<th class="th"><%:Up Traffic%></th>
+							<th class="th"><%:Down Traffic%></th>
+							<th class="th"><%:Filter Status%></th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr class="tr">
+							<td class="td" colspan="6"><em><br />
+									<%:Collecting data...%>
+								</em></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+			<div id="domainVisitPagination" style="flex-shrink: 0; margin-top: 10px;"></div>
+		</div>
+
+			 </div>
 </div>
 
 <!-- Nickname Modal -->

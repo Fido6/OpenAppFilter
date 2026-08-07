@@ -408,6 +408,134 @@ appfilter_handle_visit_list(struct ubus_context *ctx, struct ubus_object *obj,
     free(msg_obj_str);
     return 0;
 }
+
+static int
+handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
+                       struct ubus_request_data *req, const char *method,
+                       struct blob_attr *msg)
+{
+    blob_buf_init(&b, 0);
+    char *msg_obj_str = blobmsg_format_json(msg, true);
+    if (!msg_obj_str)
+    {
+        printf("format json failed\n");
+        return 0;
+    }
+
+    struct json_object *req_obj = json_tokener_parse(msg_obj_str);
+    struct json_object *mac_obj = json_object_object_get(req_obj, "mac");
+    struct json_object *page_obj = json_object_object_get(req_obj, "page");
+    struct json_object *page_size_obj = json_object_object_get(req_obj, "page_size");
+
+    int page = 1;
+    int page_size = 20;
+    if (page_obj) page = json_object_get_int(page_obj);
+    if (page_size_obj) {
+        page_size = json_object_get_int(page_size_obj);
+        if (page_size <= 0) page_size = 20;
+    }
+
+    if (!mac_obj)
+    {
+        printf("mac is null\n");
+        json_object_put(req_obj);
+        free(msg_obj_str);
+        return 0;
+    }
+
+    const char *mac = json_object_get_string(mac_obj);
+    dev_node_t *node = find_dev_node(mac);
+    if (!node)
+    {
+        printf("not found mac:%s\n", mac);
+        json_object_put(req_obj);
+        free(msg_obj_str);
+        return 0;
+    }
+
+    struct json_object *root_obj = json_object_new_object();
+    struct json_object *list_array = json_object_new_array();
+    int total_count = 0;
+    int i;
+
+    /* Collect all domain records into a flat array for sorting */
+    int max_domain = 128;
+    int domain_count = 0;
+    struct json_object **sorted = calloc(max_domain, sizeof(struct json_object *));
+
+    for (i = 0; i < MAX_VISIT_HASH_SIZE; i++)
+    {
+        visit_domain_info_t *p = node->domain_htable[i];
+        while (p && domain_count < max_domain)
+        {
+            if (p->appid > 0 && strlen(p->url) > 0)
+            {
+                struct json_object *d_obj = json_object_new_object();
+                json_object_object_add(d_obj, "appid", json_object_new_int(p->appid));
+                json_object_object_add(d_obj, "url", json_object_new_string(p->url));
+                json_object_object_add(d_obj, "lt", json_object_new_int(p->latest_time));
+                json_object_object_add(d_obj, "act", json_object_new_int(p->action));
+                json_object_object_add(d_obj, "up_flow", json_object_new_int64(p->up_flow));
+                json_object_object_add(d_obj, "down_flow", json_object_new_int64(p->down_flow));
+                /* app name and icon */
+                char *name = get_app_name_by_id(p->appid);
+                json_object_object_add(d_obj, "name", json_object_new_string(name ? name : "unknown"));
+                int with_icon = check_app_icon_exist(p->appid);
+                json_object_object_add(d_obj, "icon", json_object_new_int(with_icon));
+                sorted[domain_count++] = d_obj;
+            }
+            p = p->next;
+        }
+    }
+
+    total_count = domain_count;
+
+    /* Sort by latest_time descending */
+    int j, k;
+    for (j = 0; j < domain_count; j++) {
+        for (k = j + 1; k < domain_count; k++) {
+            struct json_object *lt_j = json_object_object_get(sorted[j], "lt");
+            struct json_object *lt_k = json_object_object_get(sorted[k], "lt");
+            if (json_object_get_int(lt_j) < json_object_get_int(lt_k)) {
+                struct json_object *tmp = sorted[j];
+                sorted[j] = sorted[k];
+                sorted[k] = tmp;
+            }
+        }
+    }
+
+    /* Paginate */
+    int start_idx = (page - 1) * page_size;
+    int end_idx = start_idx + page_size;
+    if (end_idx > total_count) end_idx = total_count;
+
+    for (j = start_idx; j < end_idx && j < total_count; j++) {
+        json_object_array_add(list_array, json_object_get(sorted[j]));
+    }
+
+    json_object_object_add(root_obj, "total", json_object_new_int(total_count));
+    json_object_object_add(root_obj, "list", list_array);
+    json_object_object_add(root_obj, "page", json_object_new_int(page));
+    json_object_object_add(root_obj, "page_size", json_object_new_int(page_size));
+    int total_pages = (total_count + page_size - 1) / page_size;
+    if (total_pages < 1) total_pages = 1;
+    json_object_object_add(root_obj, "total_pages", json_object_new_int(total_pages));
+
+    /* Cleanup sorted array */
+    for (j = 0; j < domain_count; j++) {
+        json_object_put(sorted[j]);
+    }
+    free(sorted);
+
+    blob_buf_init(&b, 0);
+    blobmsg_add_object(&b, root_obj);
+    ubus_send_reply(ctx, req, b.head);
+    json_object_put(root_obj);
+    json_object_put(req_obj);
+    free(msg_obj_str);
+    return 0;
+}
+
 static int handle_debug(struct ubus_context *ctx, struct ubus_object *obj,
                             struct ubus_request_data *req, const char *method,
                             struct blob_attr *msg)
@@ -2449,6 +2577,7 @@ static struct ubus_method appfilter_object_methods[] = {
     UBUS_METHOD("del_whitelist_user", handle_del_whitelist_user, empty_policy),
     UBUS_METHOD("service_config", handle_service_config, empty_policy),
     UBUS_METHOD("cmd", handle_cmd, empty_policy),
+    UBUS_METHOD("dev_domain_list", handle_dev_domain_list, empty_policy),
 };
 
 
