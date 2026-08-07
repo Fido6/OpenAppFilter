@@ -1,178 +1,173 @@
-/* OAF Theme Variables - Light Mode (Default) */
+/* ==========================================================================
+   OpenAppFilter - Dark Theme Support
+   ========================================================================== */
+
 :root {
-    /* Primary */
-    --oaf-primary: #2885e8;
-    --oaf-primary-dark: #1a70d2;
-    --oaf-text-on-primary: #ffffff;
-    
-    /* Success */
-    --oaf-success: #4CAF50;
-    --oaf-success-dark: #45a049;
-    --oaf-text-on-success: #ffffff;
-    
-    /* Danger */
-    --oaf-danger: #f44336;
-    --oaf-danger-dark: #da190b;
-    --oaf-danger-alt: #ea4335;
-    --oaf-text-on-danger: #ffffff;
-    
-    /* Warning */
-    --oaf-warning-bg: #fff3cd;
-    --oaf-warning-border: #ffc107;
-    --oaf-warning-text: #856404;
-    
-    /* Neutral */
-    --oaf-slider-bg: #cccccc;
-    --oaf-slider-knob-bg: #ffffff;
-    --oaf-checked-slider-bg: #2196F3;
-    --oaf-h1-h2-color: #333;
-    --oaf-border-low: #e5e7eb;
-    --oaf-border-medium: #d1d5db;
-    --oaf-bg-high: #ffffff;
-    --oaf-bg-low: #f5f5f5;
-    --oaf-bg-card: #3c4043;
-    --oaf-text-on-bg-card: #ffffff;
-    --oaf-checkbox-border: #aca9a9;
-    --oaf-text-muted: #666;
-    --oaf-text-muted-alt: #9aa0a6;
-    --oaf-progress-bg: #d1d5db;
-    --oaf-progress-fill: #1a73e8;
-    --oaf-offline-color: #A9A9A9;
-    --oaf-active-color: #1a73e8;
-    --oaf-alert-border: #e8a317;
-    --oaf-table-border: #ddd;
-    --oaf-text-used: #d93025;
-    --oaf-link-color: #2885e8;
+    /* Light theme defaults */
+    --text-color-primary: #333;
+    --text-color-secondary: #666;
+    --background-color-high: #ffffff;
+    --background-color-low: #f5f5f5;
+    --border-color-low: #e5e7eb;
+    --border-color-medium: #d1d5db;
+    --border-color-high: #9ca3af;
+    --primary-color: #1a73e8;
+    --primary-color-hover: #1557b0;
+    --primary-color-on: #ffffff;
+    --success-color: #4CAF50;
+    --success-color-hover: #45a049;
+    --success-color-on: #ffffff;
+    --danger-color: #ea4335;
+    --danger-color-hover: #c5221f;
+    --danger-color-on: #ffffff;
+    --warning-color: #e8a317;
+    --info-bg: #fff3cd;
+    --info-text: #856404;
+    --info-border: #ffc107;
+    --disabled-color: #A9A9A9;
+    --slider-bg: #ccc;
+    --slider-bg-active: #2196F3;
+    --table-header-bg: #f5f5f5;
+    --table-zebra-bg: #fafbfc;
+    --modal-bg: #ffffff;
+    --tooltip-bg: #3c4043;
+    --tooltip-text: #ffffff;
+    --help-icon-bg: #9aa0a6;
+    --help-icon-hover: #5f6368;
+    --checkbox-border: #aca9a9;
 }
 
-/* OAF Theme Variables - Dark Mode */
+/* Dark theme overrides - applied when body has class 'dark' */
 body.dark {
-    --oaf-primary: #2b8bf5;
-    --oaf-primary-dark: #1a70d2;
-    --oaf-text-on-primary: #e0e0e0;
-    
-    --oaf-success: #66BB6A;
-    --oaf-success-dark: #45a049;
-    --oaf-text-on-success: #1a1a1a;
-    
-    --oaf-danger: #ef5350;
-    --oaf-danger-dark: #c5221f;
-    --oaf-danger-alt: #ef5350;
-    --oaf-text-on-danger: #1a1a1a;
-    
-    --oaf-warning-bg: #3d3421;
-    --oaf-warning-border: #ffc107;
-    --oaf-warning-text: #f5f5f5;
-    
-    --oaf-slider-bg: #555555;
-    --oaf-slider-knob-bg: #222222;
-    --oaf-checked-slider-bg: #2b8bf5;
-    --oaf-h1-h2-color: #e0e0e0;
-    --oaf-border-low: #444444;
-    --oaf-border-medium: #555555;
-    --oaf-bg-high: #2a2a2a;
-    --oaf-bg-low: #1e1e1e;
-    --oaf-bg-card: #3c4043;
-    --oaf-text-on-bg-card: #ffffff;
-    --oaf-checkbox-border: #666666;
-    --oaf-text-muted: #aaaaaa;
-    --oaf-text-muted-alt: #aaaaaa;
-    --oaf-progress-bg: #555555;
-    --oaf-progress-fill: #2b8bf5;
-    --oaf-offline-color: #888888;
-    --oaf-active-color: #2b8bf5;
-    --oaf-alert-border: #ffc107;
-    --oaf-table-border: #555555;
-    --oaf-text-used: #ef5350;
-    --oaf-link-color: #2b8bf5;
+    --text-color-primary: #e0e0e0;
+    --text-color-secondary: #999;
+    --background-color-high: #1e1e1e;
+    --background-color-low: #2a2a2a;
+    --border-color-low: #444444;
+    --border-color-medium: #555555;
+    --border-color-high: #777777;
+    --primary-color: #4A9EFF;
+    --primary-color-hover: #2b7de0;
+    --primary-color-on: #1e1e1e;
+    --success-color: #4CAF50;
+    --success-color-hover: #388E3C;
+    --success-color-on: #1e1e1e;
+    --danger-color: #EF5350;
+    --danger-color-hover: #D32F2F;
+    --danger-color-on: #1e1e1e;
+    --warning-color: #FFB74D;
+    --info-bg: #2d2520;
+    --info-text: #FFE08A;
+    --info-border: #5a4a1c;
+    --disabled-color: #666;
+    --slider-bg: #555;
+    --slider-bg-active: #4A9EFF;
+    --table-header-bg: #2a2a2a;
+    --table-zebra-bg: #252525;
+    --modal-bg: #1e1e1e;
+    --tooltip-bg: #555;
+    --tooltip-text: #e0e0e0;
+    --help-icon-bg: #777;
+    --help-icon-hover: #888;
+    --checkbox-border: #777;
 }
 
-/* =================== Base Styles =================== */
+/* System preference: prefers dark color scheme */
+@media (prefers-color-scheme: dark) {
+    body:not(.light) {
+        --text-color-primary: #e0e0e0;
+        --text-color-secondary: #999;
+        --background-color-high: #1e1e1e;
+        --background-color-low: #2a2a2a;
+        --border-color-low: #444444;
+        --border-color-medium: #555555;
+        --border-color-high: #777777;
+        --primary-color: #4A9EFF;
+        --primary-color-hover: #2b7de0;
+        --primary-color-on: #1e1e1e;
+        --success-color: #4CAF50;
+        --success-color-hover: #388E3C;
+        --success-color-on: #1e1e1e;
+        --danger-color: #EF5350;
+        --danger-color-hover: #D32F2F;
+        --danger-color-on: #1e1e1e;
+        --warning-color: #FFB74D;
+        --info-bg: #2d2520;
+        --info-text: #FFE08A;
+        --info-border: #5a4a1c;
+        --disabled-color: #666;
+        --slider-bg: #555;
+        --slider-bg-active: #4A9EFF;
+        --table-header-bg: #2a2a2a;
+        --table-zebra-bg: #252525;
+        --modal-bg: #1e1e1e;
+        --tooltip-bg: #555;
+        --tooltip-text: #e0e0e0;
+        --help-icon-bg: #777;
+        --help-icon-hover: #888;
+        --checkbox-border: #777;
+    }
+}
+
+/* ==========================================================================
+   General Styles
+   ========================================================================== */
+
 body {
     font-family: Arial, sans-serif;
+    color: var(--text-color-primary);
+    background-color: var(--background-color-high);
 }
 
 h1, h2 {
-    color: var(--oaf-h1-h2-color);
+    color: var(--text-color-primary);
 }
 
-/* =================== Button Container =================== */
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.button-check {
+    padding: 3px 8px;
+    background-color: transparent;
+    color: var(--success-color);
+    border: 1px solid var(--success-color);
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.button-check:hover {
+    background-color: var(--background-color-low);
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
 .button-container {
     display: flex;
-    justify-content: right; 
-    margin-top: 5px; 
+    justify-content: right;
+    margin-top: 5px;
 }
 
-/* =================== Submit Button =================== */
 .submit-button {
     margin-top: 30px;
-    width: 150px; 
-    height: 30px; 
-    background-color: var(--oaf-primary);
-    color: var(--oaf-text-on-primary);
+    width: 150px;
+    height: 30px;
+    background-color: var(--primary-color);
+    color: var(--primary-color-on);
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
+
 .submit-button:hover {
-    background-color: var(--oaf-primary-dark);
+    background-color: var(--primary-color-hover);
 }
 
-/* =================== Button Check =================== */
-.button-check {
-    padding: 3px 8px;
-    background-color: transparent;
-    color: var(--oaf-success);
-    border: 1px solid var(--oaf-success);
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-}
-.button-check:hover {
-    background-color: var(--oaf-bg-low);
-    border-color: var(--oaf-primary);
-    color: var(--oaf-primary-dark);
-}
+/* ==========================================================================
+   Toggle Switch
+   ========================================================================== */
 
-/* =================== Select All Button =================== */
-.select-all-btn {
-    background-color: var(--oaf-success);
-    color: var(--oaf-text-on-success);
-    border: none;
-    padding: 4px 8px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 12px;
-    margin-left: 10px;
-}
-.select-all-btn:hover {
-    background-color: var(--oaf-success-dark);
-}
-.select-all-btn.selected {
-    background-color: var(--oaf-danger);
-}
-.select-all-btn.selected:hover {
-    background-color: var(--oaf-danger-dark);
-}
-
-/* =================== Select All Container =================== */
-.select-all-container {
-    display: flex;
-    align-items: center;
-    margin: 5px 0;
-    padding: 3px 0;
-    border-bottom: 1px solid var(--oaf-border-low);
-    width: 100%;
-    gap: 5px;
-}
-
-.select-all-label {
-    font-size: 12px;
-    opacity: 0.7;
-    cursor: pointer;
-}
-
-/* =================== Switch =================== */
 .switch {
     position: relative;
     display: inline-block;
@@ -193,7 +188,7 @@ h1, h2 {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: var(--oaf-slider-bg);
+    background-color: var(--slider-bg);
     transition: .4s;
     border-radius: 20px;
 }
@@ -205,20 +200,73 @@ h1, h2 {
     width: 16px;
     left: 2px;
     bottom: 2px;
-    background-color: var(--oaf-slider-knob-bg);
+    background-color: var(--background-color-high);
     transition: .4s;
     border-radius: 50%;
 }
 
 input:checked + .slider {
-    background-color: var(--oaf-checked-slider-bg);
+    background-color: var(--slider-bg-active);
 }
 
 input:checked + .slider:before {
     transform: translateX(20px);
 }
 
-/* =================== Checkbox =================== */
+/* ==========================================================================
+   Select All Button
+   ========================================================================== */
+
+.select-all-btn {
+    background-color: var(--success-color);
+    color: var(--success-color-on);
+    border: none;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.select-all-btn:hover {
+    background-color: var(--success-color-hover);
+}
+
+.select-all-btn.selected {
+    background-color: var(--danger-color);
+}
+
+.select-all-btn.selected:hover {
+    background-color: var(--danger-color-hover);
+}
+
+.select-all-container {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    padding: 3px 0;
+    border-bottom: 1px solid var(--border-color-low);
+    width: 100%;
+    gap: 5px;
+}
+
+.select-all-container input[type="checkbox"] {
+    margin: 0;
+    vertical-align: middle;
+    position: relative;
+    top: 0;
+}
+
+.select-all-label {
+    font-size: 12px;
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   Checkbox
+   ========================================================================== */
+
 .app-item input[type="checkbox"] {
     margin: 0;
     vertical-align: middle;
@@ -228,10 +276,13 @@ input:checked + .slider:before {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
-    border: 1px solid var(--oaf-checkbox-border);
+    border: 1px solid var(--checkbox-border);
 }
 
-/* =================== Help Icon =================== */
+/* ==========================================================================
+   Help Icon / Tooltip
+   ========================================================================== */
+
 .help-icon {
     position: relative;
     display: inline-block;
@@ -247,161 +298,383 @@ input:checked + .slider:before {
     width: 16px;
     height: 16px;
     border-radius: 50%;
-    background-color: var(--oaf-text-muted-alt);
-    color: white;
+    background-color: var(--help-icon-bg);
+    color: var(--primary-color-on);
     font-size: 10px;
+    font-weight: bold;
 }
 
 .help-icon:hover .help-question {
-    background-color: var(--oaf-text-muted);
+    background-color: var(--help-icon-hover);
 }
 
-.help-tip {
-    display: none;
+.help-text {
     position: absolute;
+    z-index: 100;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 5px;
     width: 280px;
-    background-color: var(--oaf-bg-card);
-    color: var(--oaf-text-on-bg-card);
+    background-color: var(--tooltip-bg);
+    color: var(--tooltip-text);
     text-align: left;
     padding: 10px;
     border-radius: 4px;
     font-size: 12px;
-    z-index: 10;
-    left: 30px;
-    top: 50%;
-    transform: translateY(-50%);
+    line-height: 1.5;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
 }
 
-.help-tip::after {
+.help-icon:hover .help-text {
+    opacity: 1;
+    visibility: visible;
+}
+
+.help-text::before {
     content: "";
     position: absolute;
-    top: 50%;
-    left: -8px;
-    margin-top: -6px;
-    width: 0;
-    height: 0;
+    top: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 6px 8px 6px;
     border-style: solid;
-    border-width: 6px 8px 6px 0;
-    border-color: transparent var(--oaf-bg-card) transparent transparent;
+    border-color: transparent transparent var(--tooltip-bg) transparent;
 }
 
-.help-icon:hover .help-tip {
-    display: block;
+/* ==========================================================================
+   Config Rows / Cards
+   ========================================================================== */
+
+.config-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+    gap: 4px 0;
 }
 
-/* =================== Status Module =================== */
-.status-module {
-    border: 1px solid var(--oaf-border-low);
-    border-radius: 8px;
+.config-label {
+    font-weight: 500;
+    font-size: 14px;
+    margin-right: 6px;
 }
 
-/* =================== View Dialog =================== */
-.view-dialog-content {
-    background-color: var(--oaf-bg-high);
-    border-radius: 8px;
-}
-
-/* =================== User List Table =================== */
-.user-list-table th {
-    background-color: var(--oaf-bg-low);
-    font-weight: bold;
-}
-
-/* =================== Progress Bar =================== */
-.time-progress-bar {
-    height: 6px;
-    background-color: var(--oaf-progress-bg);
-    border-radius: 3px;
+.config-row-container {
     margin-top: 5px;
+    border: 1px solid var(--border-color-low);
+    border-radius: 8px;
+}
+
+.config-section-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color-low);
+    border-radius: 8px 8px 0 0;
+}
+
+/* ==========================================================================
+   Status Module
+   ========================================================================== */
+
+.status-module {
+    border: 1px solid var(--border-color-low);
+    border-radius: 8px;
+}
+
+.status-module-info {
+    padding: 10px;
+    border-radius: 6px;
+    border-left: 3px solid var(--primary-color);
+    opacity: 0.75;
+}
+
+/* ==========================================================================
+   Time Progress Bar
+   ========================================================================== */
+
+.time-progress-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.time-progress-label {
+    width: 100px;
+    font-size: 12px;
+    color: var(--text-color-secondary);
+}
+
+.time-progress-bar {
+    flex: 1;
+    height: 6px;
+    background-color: var(--border-color-medium);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 0 10px;
 }
 
 .time-progress-fill {
-    height: 6px;
+    height: 100%;
     border-radius: 3px;
-    background-color: var(--oaf-progress-fill);
+    background-color: var(--primary-color);
     transition: width 0.5s ease;
 }
 
 .time-progress-text {
+    width: 120px;
     font-size: 12px;
-    color: var(--oaf-text-muted);
-    opacity: 0.9;
+    text-align: right;
 }
 
-.time-progress-text-used {
-    color: var(--oaf-text-used);
-}
-
-/* =================== Clear Time Button =================== */
 .clear-time-btn {
     padding: 4px 12px;
-    background-color: var(--oaf-danger-alt);
-    color: var(--oaf-text-on-danger);
+    background-color: var(--danger-color);
+    color: var(--danger-color-on);
     border: none;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 12px;
 }
+
 .clear-time-btn:hover {
-    background-color: var(--oaf-danger-dark);
+    background-color: var(--danger-color-hover);
 }
 
-/* =================== Warning Box =================== */
-.warning-box {
-    display: none;
+/* ==========================================================================
+   Warning / Info Boxes
+   ========================================================================== */
+
+.info-box {
     margin-top: 12px;
     margin-bottom: 12px;
     padding: 12px 16px;
     border-radius: 6px;
-    background-color: var(--oaf-warning-bg);
-    border-left: 3px solid var(--oaf-warning-border);
+    background-color: var(--info-bg);
+    border-left: 3px solid var(--info-border);
 }
 
-.warning-box span {
-    color: var(--oaf-warning-text);
+.info-box-text {
+    color: var(--info-text);
     font-size: 13px;
     line-height: 1.6;
 }
 
-/* =================== Alert Box =================== */
-.alert-box {
-    border: 1px solid var(--oaf-danger);
-    border-radius: 5px;
-    padding: 15px;
-    margin-top: 15px;
-    margin-bottom: 15px;
+.warning-box {
+    margin-top: 10px;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    border-left: 3px solid var(--danger-color);
+    background-color: rgba(239, 83, 80, 0.1);
 }
 
-.alert-box-header {
+.warning-box-text {
+    color: var(--danger-color);
+    font-size: 13px;
+    font-weight: 500;
+}
+
+/* ==========================================================================
+   Table Styles
+   ========================================================================== */
+
+table.imagetable {
+    font-size: 11px;
+    color: var(--text-color-primary);
+    border-width: 1px;
+    border-color: var(--border-color-medium);
+    border-collapse: collapse;
+}
+
+table.imagetable th {
+    background: var(--table-header-bg);
+    padding: 5px;
+    border-style: solid;
+    border-color: var(--border-color-medium);
     font-weight: 600;
-    font-size: 14px;
-    color: var(--oaf-primary);
-    margin-bottom: 10px;
 }
 
-/* =================== Table =================== */
-.table-cell {
-    border: 1px solid var(--oaf-table-border);
+table.imagetable td {
+    background: var(--background-color-high);
+    padding: 5px;
+    border-style: solid;
+    border-color: var(--border-color-medium);
+}
+
+/* ==========================================================================
+   Modal
+   ========================================================================== */
+
+.view-dialog-content {
+    background-color: var(--modal-bg);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid var(--border-color-low);
+}
+
+.modal-header {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color-low);
+}
+
+.user-list-table th {
+    background-color: var(--table-header-bg);
+    font-weight: bold;
     padding: 8px;
-    text-align: center;
+    border: 1px solid var(--border-color-low);
 }
 
-/* =================== Offline Status =================== */
-.offline-text {
-    color: var(--oaf-offline-color);
+.user-list-table td {
+    padding: 8px;
+    border: 1px solid var(--border-color-low);
+    text-align: left;
 }
 
-/* =================== Active Status =================== */
+/* ==========================================================================
+   User Cards
+   ========================================================================== */
+
+.user-card {
+    border: 1px solid var(--border-color-low);
+    border-radius: 10px;
+    background-color: var(--background-color-high);
+    padding: 15px;
+    margin-bottom: 12px;
+}
+
+.user-card:hover {
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    border-color: var(--border-color-medium);
+}
+
+.card-status--active {
+    background: rgba(26, 115, 232, 0.15);
+    color: var(--primary-color);
+}
+
+.card-status--online {
+    background: rgba(76, 175, 80, 0.15);
+    color: var(--success-color);
+}
+
+.card-status--offline {
+    background: var(--background-color-low);
+    opacity: 0.6;
+}
+
+/* ==========================================================================
+   Tab Styles
+   ========================================================================== */
+
+.tab-container {
+    display: flex;
+    border-bottom: 2px solid var(--border-color-low);
+    margin-bottom: 16px;
+    gap: 2px;
+}
+
+.tab-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    border-radius: 4px 4px 0 0;
+    color: var(--text-color-secondary);
+}
+
+.tab-item.active {
+    color: var(--primary-color);
+    font-weight: 600;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+.tab-item:hover {
+    background-color: var(--background-color-low);
+    opacity: 0.8;
+}
+
+/* ==========================================================================
+   Button Groups
+   ========================================================================== */
+
+.oaf-btn-primary {
+    background-color: var(--primary-color);
+    color: var(--primary-color-on);
+    border: none;
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.oaf-btn-primary:hover {
+    background-color: var(--primary-color-hover);
+}
+
+.oaf-btn-cancel {
+    background: transparent;
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    padding: 8px 16px;
+    cursor: pointer;
+}
+
+.oaf-btn-cancel:hover {
+    background-color: var(--background-color-low);
+}
+
+.delete-button {
+    padding: 5px 12px;
+    color: var(--danger-color);
+    border: 1px solid var(--border-color-medium);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-button:hover {
+    background-color: rgba(239, 83, 80, 0.1);
+    border-color: var(--danger-color);
+}
+
+/* ==========================================================================
+   Inline Form Elements
+   ========================================================================== */
+
+.select-input {
+    min-width: 120px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color-medium);
+    background-color: var(--background-color-high);
+    color: var(--text-color-primary);
+}
+
+/* ==========================================================================
+   Misc
+   ========================================================================== */
+
+.disabled-text {
+    color: var(--disabled-color);
+}
+
 .active-text {
-    color: var(--oaf-active-color);
+    color: var(--primary-color);
 }
 
-/* =================== Alert Border =================== */
-.alert-border {
-    border-left: 3px solid var(--oaf-alert-border);
+.offline-text {
+    color: var(--disabled-color);
 }
 
-/* =================== Link Color =================== */
-.link-color {
-    color: var(--oaf-link-color);
+.field-value {
+    color: var(--success-color);
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 600px) {
+    .app-item {
+        width: 100%;
+    }
 }

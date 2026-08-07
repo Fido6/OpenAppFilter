@@ -2,7 +2,7 @@
 <style>
     /* 固定按钮样式，不受主题影响 - 蓝色背景，白色文字 */
     .cbi-button.cbi-button-add {
-        background-color: #1a73e8 !important;
+        background-color: var(--primary-color) !important;
         color: #ffffff !important;
         border: none !important;
         padding: 6px 12px !important;
@@ -13,17 +13,17 @@
         transition: background-color 0.2s ease !important;
     }
     .cbi-button.cbi-button-add:hover {
-        background-color: #1557b0 !important;
+        background-color: var(--primary-color-hover) !important;
         color: #ffffff !important;
     }
     .cbi-button.cbi-button-add:active {
-        background-color: #0d47a1 !important;
+        background-color: var(--primary-color-dark, #0d47a1) !important;
         color: #ffffff !important;
     }
     
     /* 页面卡片边框 */
     .cbi-section.cbi-tblsection {
-        border: 1px solid var(--border-color-low, #e5e7eb);
+        border: 1px solid var(--border-color-low);
         border-radius: 8px;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         margin-top: 20px;
@@ -61,12 +61,12 @@
     .cbi-section-table th, .cbi-section-table td {
         padding: 10px 16px;
         text-align: left;
-        border-bottom: 1px solid var(--border-color-low, #e5e7eb);
+        border-bottom: 1px solid var(--border-color-low);
     }
     
     .cbi-section-table th {
-        background: var(--background-color-low, #f5f5f5);
-        color: var(--text-color-medium, #6b7280);
+        background: var(--background-color-low);
+        color: var(--text-color-secondary);
         font-weight: 600;
         font-size: 12.5px;
         letter-spacing: 0.2px;

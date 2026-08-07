@@ -35,7 +35,7 @@
         max-width: 650px;
         padding: 10px 14px;
         border-radius: 6px;
-        border-left: 3px solid var(--oaf-primary);
+        border-left: 3px solid var(--primary-color);
         opacity: 0.75;
     }
     .desc span {
@@ -44,6 +44,27 @@
         display: block;
     }
 
+    .submit-button {
+        padding: 8px 20px;
+        width: 150px;
+        height: auto;
+        margin-top: 0;
+        background-color: var(--primary-color);
+        color: var(--primary-color-on);
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.4;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+    }
+    .submit-button:hover {
+        background-color: var(--primary-color-hover);
+    }
 
     .version-value {
         font-size: 14px;
@@ -56,21 +77,37 @@
         width: 44px;
         height: 24px;
     }
-    .switch .slider {
-        background-color: var(--oaf-slider-bg);
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
         border-radius: 24px;
     }
-    .switch .slider:before {
-        background-color: var(--oaf-slider-knob-bg);
+    .slider:before {
+        position: absolute;
+        content: "";
         height: 18px;
         width: 18px;
         left: 3px;
         bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
     }
-    .switch input:checked + .slider {
-        background-color: var(--oaf-primary);
+    input:checked + .slider {
+        background-color: var(--slider-bg-active);
     }
-    .switch input:checked + .slider:before {
+    input:checked + .slider:before {
         transform: translateX(20px);
     }
 </style>
@@ -268,15 +305,16 @@
 
         <div class="config-row">
             <label class="config-label"><%:Clear Active Time%></label>
-            <button type="button" class="clear-time-btn" onclick="clearActiveTime()"><%:Clear Active Time%></button>
+            <button type="button" class="submit-button" onclick="clearActiveTime()" style="background-color: #ea4335;"><%:Clear Active Time%></button>
         </div>
 
         <div class="config-row">
             <label class="config-label"><%:Clear Offline Users%></label>
-            <button type="button" class="clear-time-btn" onclick="clearOfflineUsers()"><%:Clear Offline Users%></button>
+            <button type="button" class="submit-button" onclick="clearOfflineUsers()" style="background-color: #ea4335;"><%:Clear Offline Users%></button>
         </div>
         
         <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button type="button" class="submit-button" onclick="location.reload()" style="background: transparent; color: var(--primary-color); border: 1px solid var(--border-color-medium);"><%:Refresh%></button>
             <button type="button" class="submit-button" onclick="submitHandle()"><%:Save%></button>
         </div>
     </div>

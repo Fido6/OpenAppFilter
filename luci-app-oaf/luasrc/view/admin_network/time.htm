@@ -11,7 +11,7 @@
         width: 150px;
         height: auto;
         margin-top: 0;
-        background-color: #1a73e8;
+        background-color: var(--primary-color);
         color: white;
         border: none;
         border-radius: 4px;
@@ -25,7 +25,7 @@
         transition: background-color 0.2s;
     }
     .submit-button:hover {
-        background-color: #1557b0;
+        background-color: var(--primary-color-hover);
     }
 
     /* 时间进度条样式 */
@@ -37,7 +37,7 @@
     .time-progress-label {
         width: 32px;
         font-size: 12px;
-        color: #666;
+        color: var(--text-color-secondary);
         opacity: 0.9;
         flex-shrink: 0;
         font-weight: 500;
@@ -45,7 +45,7 @@
     .time-progress-bar {
         flex: 1;
         height: 6px;
-        background-color: #d1d5db;
+        background-color: var(--border-color-medium);
         border-radius: 3px;
         overflow: hidden;
         margin: 0 8px;
@@ -55,7 +55,7 @@
     .time-progress-fill {
         height: 100%;
         border-radius: 3px;
-        background-color: #1a73e8;
+        background-color: var(--primary-color);
         transition: width 0.5s ease;
     }
     .time-progress-text {
@@ -67,7 +67,7 @@
     /* 清除按钮样式 */
     .clear-time-btn {
         padding: 4px 12px;
-        background-color: #ea4335;
+        background-color: var(--danger-color);
         color: white;
         border: none;
         border-radius: 4px;
@@ -77,12 +77,12 @@
         transition: background-color 0.2s;
     }
     .clear-time-btn:hover {
-        background-color: #c5221f;
+        background-color: var(--danger-color-hover);
     }
 
     .time-rules {
         margin-top: 20px;
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-color-medium);
         padding: 15px;
         border-radius: 5px;
         min-width: 600px;
@@ -102,7 +102,7 @@
     }
     .time-table th, .time-table td {
         padding: 8px;
-        border: 1px solid #ddd;
+        border: 1px solid var(--border-color-medium);
         text-align: center;
         overflow: visible;
     }
@@ -122,7 +122,7 @@
     }
     
     .daily-limit-error {
-        color: red;
+        color: var(--danger-color);
         font-size: 11px;
         margin-top: 2px;
         display: none;
@@ -261,7 +261,7 @@
         function buildProgressBar(label, used, limit) {
             if (limit <= 0) return `<div class="time-progress-row"><span class="time-progress-label">${label}</span><span class="time-progress-text" style="color:#999;"><%:Not set%></span></div>`;
             var pct = Math.min(Math.round((used / limit) * 100), 100);
-            var text = used >= limit ? `<span style="color:#d93025;"><%:Used up%></span> <span style="color:#999;">(<%:Total%>: ${limit} <%:min%>)</span>` : `${used} / ${limit} <%:min%>`;
+            var text = used >= limit ? `<span style="color:var(--danger-color);"><%:Used up%></span> <span style="color:var(--text-color-secondary);">(<%:Total%>: ${limit} <%:min%>)</span>` : `${used} / ${limit} <%:min%>`;
             return `<div class="time-progress-row"><span class="time-progress-label">${label}</span><div class="time-progress-bar"><div class="time-progress-fill" style="width:${pct}%"></div></div><span class="time-progress-text">${text}</span></div>`;
         }
 
@@ -753,7 +753,7 @@
                     // 高亮当前星期几的行
                     const currentRow = document.querySelector(`#dailyLimit_${currentWeekday}_enable`)?.closest('tr');
                     if (currentRow) {
-                        currentRow.style.backgroundColor = '#e8f0fe';
+                        currentRow.style.backgroundColor = 'var(--table-zebra-bg)';
                         currentRow.style.fontWeight = 'bold';
                     }
                 }
@@ -963,9 +963,9 @@
             </div>
             
             <!-- 当前上网时长信息显示 -->
-            <div id="currentTimeUsageInfo" style="border: 1px solid #1a73e8; border-radius: 5px; padding: 15px; margin-bottom: 15px; display: none;">
+            <div id="currentTimeUsageInfo" style="border: 1px solid var(--primary-color); border-radius: 5px; padding: 15px; margin-bottom: 15px; display: none;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                    <div style="font-weight: bold; color: #1a73e8; font-size: 14px;">
+                    <div style="font-weight: bold; color: var(--primary-color); font-size: 14px;">
                         <%:Today Time Usage%>
                     </div>
                     <button type="button" class="clear-time-btn" onclick="clearActiveTime()"><%:Clear%></button>
@@ -1099,14 +1099,14 @@
                     </tr>
                 </tbody>
             </table>
-            <div style="color: #000; font-size: 12px; margin-top: 10px;">
+            <div style="color: var(--text-color-primary); font-size: 12px; margin-top: 10px;">
                 <span><%:Note: Set to 0 to disable time limit for that period.%></span>
             </div>
         </div>
     </div>
 
     <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
-        <button type="button" class="submit-button" onclick="location.reload()" style="background: transparent; color: #1a73e8; border: 1px solid var(--border-color-medium, #d1d5db);"><%:Refresh%></button>
+        <button type="button" class="submit-button" onclick="location.reload()" style="background: transparent; color: var(--primary-color); border: 1px solid var(--border-color-medium);"><%:Refresh%></button>
         <button type="button" class="submit-button" onclick="submitHandle()"><%:Save%></button>
     </div>
 
