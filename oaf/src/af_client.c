@@ -304,7 +304,8 @@ static int __af_visit_info_report(af_client_info_t *node)
 		cJSON *domain_array = cJSON_CreateArray();
 		int domain_count = 0;
 		for (i = 0; i < node->domain_visit_num && domain_count < MAX_DOMAIN_VISIT_NUM; i++) {
-			if (node->domain_visit[i].app_id == 0 || strlen(node->domain_visit[i].url) == 0)
+			/* Keep app_id==0 records (Unknown) as long as they have a valid URL */
+			if (strlen(node->domain_visit[i].url) == 0)
 				continue;
 			if (domain_count >= 8) /* limit per report to 8 to avoid msg overflow */
 				break;
