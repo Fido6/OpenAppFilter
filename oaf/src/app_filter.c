@@ -1290,17 +1290,32 @@ static int update_url_visiting_info(af_client_info_t *client, flow_info_t *flow)
     }
     /* fallback: use destination IP address when no host/sni extracted.
      * this enables visiting URL tracking for IP-based connections
-     * such as DNS-over-HTTPS (1.1.1.1, 8.8.8.8, etc.). */
+     * such as DNS-over-HTTPS (1.1.1.1, 8.8.8.8, etc.).
+     * BUT: only fallback to IP if the current visiting_url does NOT
+     * already contain a valid domain name (has letters). This prevents
+     * IP addresses from overwriting real domain names since visiting_url
+     * is a device-level shared field. */
     if (!host && flow->dst) {
-        snprintf(ip_fallback, sizeof(ip_fallback), NIPQUAD_FMT, NIPQUAD(flow->dst));
-        host = ip_fallback;
-        len = strlen(ip_fallback);
+        int has_domain = 0;
+        int k;
+        for (k = 0; k < MAX_REPORT_URL_LEN && client->visiting.visiting_url[k]; k++) {
+            if ((client->visiting.visiting_url[k] >= 'a' && client->visiting.visiting_url[k] <= 'z') ||
+                (client->visiting.visiting_url[k] >= 'A' && client->visiting.visiting_url[k] <= 'Z')) {
+                has_domain = 1;
+                break;
+            }
+        }
+        if (!has_domain) {
+            snprintf(ip_fallback, sizeof(ip_fallback), NIPQUAD_FMT, NIPQUAD(flow->dst));
+            host = ip_fallback;
+            len = strlen(ip_fallback);
+        }
     }
     if (!host || len < MIN_REPORT_URL_LEN || len >= MAX_REPORT_URL_LEN)
         return -1;
 
     memcpy(client->visiting.visiting_url, host, len);
-    client->visiting.visiting_url[len] = 0x0; 
+    client->visiting.visiting_url[len] = 0x0;
     client->visiting.url_time = af_get_timestamp_sec();
     return 0;
 }

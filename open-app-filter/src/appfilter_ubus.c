@@ -468,7 +468,7 @@ handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
         visit_domain_info_t *p = node->domain_htable[i];
         while (p && domain_count < max_domain)
         {
-            if (p->appid > 0 && strlen(p->url) > 0)
+            if (strlen(p->url) > 0)
             {
                 struct json_object *d_obj = json_object_new_object();
                 json_object_object_add(d_obj, "appid", json_object_new_int(p->appid));
