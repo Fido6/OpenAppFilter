@@ -32,8 +32,6 @@ end
 local rules = s:option(TextValue, "_rules", translate("Rules (AdGuard Home Syntax)"),
     translate("One rule per line:<br/>" ..
         "||example.org^ - block example.org and all subdomains<br/>" ..
-        "@@||example.org^ - allow example.org and all subdomains<br/>" ..
-        "127.0.0.1 example.org - block example.org exactly (subdomains not included)<br/>" ..
         "/REGEX/ - block domains matching the regular expression<br/>" ..
         "! comment or # comment - comment line<br/>" ..
         "<br/>" ..
