@@ -1169,8 +1169,11 @@ static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int d
 	unsigned long cur_time;
 	int oldest_index = -1;
 
-	if (!node || app_id <= 0)
+	if (!node)
 		return -1;
+
+	/* app_id == 0 means the URL did not match any predefined app feature.
+	 * We still record it as "Unknown" so the user can see the domain. */
 
 	/* Without a valid URL, we cannot create or match domain records.
 	 * Only update byte counts on existing records that match the app_id.
@@ -1468,6 +1471,14 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		conn->client_hello = flow.client_hello;
 		update_url_visiting_info(client, &flow);
 
+		/* Record domain visit info right after URL extraction, before match_feature EXIT.
+		 * This ensures even unmatched domains (app_id=0) are recorded as "Unknown". */
+		if (g_oaf_record_enable && !conn->ignore) {
+			af_update_domain_visit_info(client, flow.app_id, flow.drop,
+										client->visiting.visiting_url,
+										skb->len, get_af_pkt_dir(skb->dev));
+		}
+
 		if (!match_feature(&flow) && 0 == g_app_filter_mode)
 			goto EXIT;
 		
@@ -1503,8 +1514,12 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	if (g_oaf_record_enable	){
 		if (!conn->ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
+			/* Domain visit already recorded above after update_url_visiting_info.
+			 * For subsequent packets (conn->app_id != 0), the DPI path is skipped,
+			 * so we only need to accumulate bytes. The URL is NULL meaning we only
+			 * update existing records, not create new ones. */
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
-										client->visiting.visiting_url,
+										NULL,
 										skb->len, get_af_pkt_dir(skb->dev));
 		}
 		else{
@@ -1673,6 +1688,15 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 	dpi_main(skb, &flow);
 
 	update_url_visiting_info(client, &flow);
+
+	/* Record domain visit info right after URL extraction, before match_feature EXIT.
+	 * This ensures even unmatched domains (app_id=0) are recorded as "Unknown". */
+	if (g_oaf_record_enable && !flow.ignore) {
+		af_update_domain_visit_info(client, flow.app_id, flow.drop,
+									client->visiting.visiting_url,
+									skb->len, get_af_pkt_dir(dev));
+	}
+
 	if (flow.client_hello) {
 		ct->mark |= NF_CLIENT_HELLO_BIT;
 	}
@@ -1726,8 +1750,11 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		AF_CLIENT_LOCK_W();
 		if (!flow.ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
+			/* Domain visit already recorded above after update_url_visiting_info.
+			 * For subsequent packets, the DPI/goto EXIT path is skipped, so we only
+			 * accumulate bytes. NULL URL means only update existing records. */
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
-										client->visiting.visiting_url,
+										NULL,
 										skb->len, get_af_pkt_dir(dev));
 		}
 

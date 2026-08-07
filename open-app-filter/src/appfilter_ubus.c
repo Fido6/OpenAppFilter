@@ -478,8 +478,13 @@ handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
                 json_object_object_add(d_obj, "up_flow", json_object_new_int64(p->up_flow));
                 json_object_object_add(d_obj, "down_flow", json_object_new_int64(p->down_flow));
                 /* app name and icon */
-                char *name = get_app_name_by_id(p->appid);
-                json_object_object_add(d_obj, "name", json_object_new_string(name ? name : "unknown"));
+                const char *domain_name = "Unknown";
+                if (p->appid > 0) {
+                    char *n = get_app_name_by_id(p->appid);
+                    if (n && strlen(n) > 0)
+                        domain_name = n;
+                }
+                json_object_object_add(d_obj, "name", json_object_new_string(domain_name));
                 int with_icon = check_app_icon_exist(p->appid);
                 json_object_object_add(d_obj, "icon", json_object_new_int(with_icon));
                 sorted[domain_count++] = d_obj;

@@ -182,7 +182,9 @@ void clean_invalid_domain_records(void)
                 while (p)
                 {
                     tmp = p->next;
-                    if (strlen(get_app_name_by_id(p->appid)) == 0)
+                    /* Keep app_id=0 records (Unknown) — they have valid URLs.
+                     * Only delete records whose app_id is non-zero but no longer in feature list. */
+                    if (p->appid != 0 && strlen(get_app_name_by_id(p->appid)) == 0)
                     {
                         if (prev)
                             prev->next = tmp;
