@@ -1161,21 +1161,36 @@ static int af_update_client_app_info(af_client_info_t *node, int app_id, int dro
 }
 
 static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int drop,
-									   unsigned int pkt_len, int pkt_dir)
+									   const char *url, unsigned int pkt_len, int pkt_dir)
 {
 	int i;
 	int index = -1;
 	unsigned long oldest_time = ~0UL;
 	unsigned long cur_time;
-	const char *url;
 	int oldest_index = -1;
 
 	if (!node || app_id <= 0)
 		return -1;
 
-	url = node->visiting.visiting_url;
-	if (strlen(url) < MIN_REPORT_URL_LEN || strlen(url) >= MAX_REPORT_URL_LEN)
+	/* Without a valid URL, we cannot create or match domain records.
+	 * Only update byte counts on existing records that match the app_id.
+	 * This path is taken when the connection is already identified (CT mark cache),
+	 * where DPI was not re-run and visiting_url is stale. */
+	if (!url || strlen(url) < MIN_REPORT_URL_LEN || strlen(url) >= MAX_REPORT_URL_LEN) {
+		/* Try to find ANY existing record with this app_id to accumulate bytes */
+		for (i = 0; i < node->domain_visit_num; i++) {
+			if (node->domain_visit[i].app_id == app_id) {
+				node->domain_visit[i].latest_time = af_get_timestamp_sec();
+				if (pkt_dir == PKT_DIR_UP)
+					node->domain_visit[i].up_bytes += pkt_len;
+				else
+					node->domain_visit[i].down_bytes += pkt_len;
+				return 0;
+			}
+		}
+		/* No existing record for this app_id without URL - skip */
 		return -1;
+	}
 
 	cur_time = af_get_timestamp_sec();
 
@@ -1489,6 +1504,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		if (!conn->ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
+										client->visiting.visiting_url,
 										skb->len, get_af_pkt_dir(skb->dev));
 		}
 		else{
@@ -1601,7 +1617,9 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 				AF_CLIENT_LOCK_W();
 				if (!flow.ignore){
 					af_update_client_app_info(client, app_id, ct_action);
+					/* CT mark cache path: DPI not re-run, visiting_url is stale */
 					af_update_domain_visit_info(client, app_id, ct_action,
+												NULL,
 												skb->len, get_af_pkt_dir(dev));
 				}
 				else{
@@ -1709,6 +1727,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		if (!flow.ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
+										client->visiting.visiting_url,
 										skb->len, get_af_pkt_dir(dev));
 		}
 
