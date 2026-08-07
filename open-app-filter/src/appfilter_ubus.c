@@ -477,10 +477,15 @@ handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
                 json_object_object_add(d_obj, "act", json_object_new_int(p->action));
                 json_object_object_add(d_obj, "up_flow", json_object_new_int64(p->up_flow));
                 json_object_object_add(d_obj, "down_flow", json_object_new_int64(p->down_flow));
-                /* app name and icon */
+                /* app name: first try by appid, fallback to URL-based reverse matching */
                 const char *domain_name = "Unknown";
                 if (p->appid > 0) {
                     char *n = get_app_name_by_id(p->appid);
+                    if (n && strlen(n) > 0)
+                        domain_name = n;
+                }
+                if (strcmp(domain_name, "Unknown") == 0 && strlen(p->url) > 0) {
+                    char *n = get_app_name_by_url(p->url);
                     if (n && strlen(n) > 0)
                         domain_name = n;
                 }

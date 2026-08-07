@@ -307,7 +307,7 @@ static int __af_visit_info_report(af_client_info_t *node)
 			/* Keep app_id==0 records (Unknown) as long as they have a valid URL */
 			if (strlen(node->domain_visit[i].url) == 0)
 				continue;
-			if (domain_count >= 8) /* limit per report to 8 to avoid msg overflow */
+			if (domain_count >= 16) /* limit per report to 16 to avoid msg overflow */
 				break;
 			cJSON *d_obj = cJSON_CreateObject();
 			cJSON_AddNumberToObject(d_obj, "appid", node->domain_visit[i].app_id);
@@ -613,14 +613,14 @@ static void client_timer_handler(unsigned long data)
         return;
     }
 	
-	if (client->timer_count >= 30) {
+	if (client->timer_count >= 1) {
 		__af_visit_info_report(client);
 		client->timer_count = 0;
 	}
 
 	af_update_client_status(client);
 	client->timer_count++;
-    mod_timer(&client->client_timer, jiffies + HZ * 2); 
+	   mod_timer(&client->client_timer, jiffies + HZ * 5);
 }
 
  void init_client_timer(af_client_info_t *client)

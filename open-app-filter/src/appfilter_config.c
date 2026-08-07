@@ -27,6 +27,8 @@ THE SOFTWARE.
 #include <uci.h>
 
 app_name_info_t app_name_table[MAX_SUPPORT_APP_NUM];
+app_host_info_t app_host_table[MAX_SUPPORT_APP_NUM * MAX_HOST_PATTERNS_PER_APP];
+int g_host_count = 0;
 int g_app_count = 0;
 int g_cur_class_num = 0;
 char CLASS_NAME_TABLE[MAX_APP_TYPE][MAX_CLASS_NAME_LEN];
@@ -431,6 +433,7 @@ void init_app_name_table(void)
         return;
     }
     g_app_count = 0;
+    g_host_count = 0;
     while (fgets(line_buf, sizeof(line_buf), fp))
     {
         if (strstr(line_buf, "#"))
@@ -449,8 +452,66 @@ void init_app_name_table(void)
         app_name_table[g_app_count].id = app_id;
         strcpy(app_name_table[g_app_count].name, app_name);
         g_app_count++;
+
+        /* Parse host patterns from feature segment (field index 3) */
+        char *feature_part = pos1 + 1;
+        char *feat = feature_part;
+        char *seg_start = feat;
+        while (feat && *feat)
+        {
+            char *seg_end = strchr(feat, ',');
+            if (!seg_end)
+                seg_end = feat + strlen(feat);
+            if (seg_end > feat)
+            {
+                char seg_buf[512] = {0};
+                int seg_len = (int)(seg_end - feat);
+                if (seg_len >= (int)sizeof(seg_buf))
+                    seg_len = sizeof(seg_buf) - 1;
+                strncpy(seg_buf, feat, seg_len);
+                seg_buf[seg_len] = 0;
+                /* split by ';' and take field index 3 as host */
+                char *tok = strtok(seg_buf, ";");
+                int field_idx = 0;
+                while (tok)
+                {
+                    if (field_idx == 3)
+                    {
+                        /* host pattern: skip empty, too short, pure IP, or regex-like entries */
+                        if (strlen(tok) >= 4 && g_host_count < (MAX_SUPPORT_APP_NUM * MAX_HOST_PATTERNS_PER_APP))
+                        {
+                            app_host_table[g_host_count].app_id = app_id;
+                            strncpy(app_host_table[g_host_count].host_pattern, tok,
+                                    sizeof(app_host_table[g_host_count].host_pattern) - 1);
+                            g_host_count++;
+                        }
+                        break;
+                    }
+                    tok = strtok(NULL, ";");
+                    field_idx++;
+                }
+            }
+            if (*seg_end == '\0')
+                break;
+            feat = seg_end + 1;
+        }
     }
     fclose(fp);
+}
+
+char *get_app_name_by_url(const char *url)
+{
+    int i;
+    if (!url || strlen(url) < 4)
+        return "";
+    for (i = 0; i < g_host_count; i++)
+    {
+        if (strstr(url, app_host_table[i].host_pattern))
+        {
+            return get_app_name_by_id(app_host_table[i].app_id);
+        }
+    }
+    return "";
 }
 
 void init_app_class_name_table(void)

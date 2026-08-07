@@ -37,9 +37,20 @@ typedef struct app_name_info
     int id;
     char name[64];
 } app_name_info_t;
+
+#define MAX_HOST_PATTERNS_PER_APP 16
+#define MAX_HOST_STR_LEN 128
+
+typedef struct app_host_info
+{
+    int app_id;
+    char host_pattern[MAX_HOST_STR_LEN];
+} app_host_info_t;
+
 void init_app_name_table(void);
 void init_app_class_name_table(void);
 char *get_app_name_by_id(int id);
+char *get_app_name_by_url(const char *url);
 
 int appfilter_config_alloc(void);
 

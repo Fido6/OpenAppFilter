@@ -32,7 +32,7 @@ enum NFC_PKT_DIR
 #define MAX_RECORD_APP_NUM 64
 #define MIN_REPORT_URL_LEN 4
 #define MAX_REPORT_URL_LEN 64
-#define MAX_DOMAIN_VISIT_NUM 24
+#define MAX_DOMAIN_VISIT_NUM 60
 
 typedef struct flow_stat
 {
