@@ -18,6 +18,7 @@ function index()
 	entry({"admin", "services", "appfilter", "time"}, cbi("appfilter/time", {hideapplybtn=true, hidesavebtn=true, hideresetbtn=true}), _("Time Configuration"), 25).leaf=true
 	entry({"admin", "services", "appfilter", "app_filter"}, cbi("appfilter/app_filter", {hideapplybtn=true, hidesavebtn=true, hideresetbtn=true}), _("App Filter"), 21).leaf=true
 	entry({"admin", "services", "appfilter", "feature"}, cbi("appfilter/feature", {hideapplybtn=true, hidesavebtn=true, hideresetbtn=true}), _("App Feature Library"), 26).leaf=true
+	entry({"admin", "services", "appfilter", "custom_rules"}, cbi("appfilter/custom_rules", {hideapplybtn=true, hideresetbtn=true}), _("Custom Rules"), 28).leaf=true
 
 	entry({"admin", "services", "appfilter", "user"}, cbi("appfilter/user", {hideapplybtn=true, hidesavebtn=true, hideresetbtn=true}), _("User Configuration"), 24).leaf=true
 	entry({"admin", "services", "appfilter", "advance"}, cbi("appfilter/advance", {hideapplybtn=true, hidesavebtn=true, hideresetbtn=true}), _("Advanced Settings"), 27).leaf=true
