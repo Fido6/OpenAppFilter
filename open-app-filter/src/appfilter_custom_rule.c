@@ -73,8 +73,11 @@ static int escape_domain(char *dst, int dst_len, const char *domain)
 }
 
 /* build feature line and send to kernel via netlink:
- * block: appid custom_rules:[tcp;;;REGEX;;;0]
- * allow: appid custom_rules:[tcp;;;REGEX;;;1]
+ * block: appid custom_rules:[tcp;;;REGEX;;;;0]
+ * allow: appid custom_rules:[tcp;;;REGEX;;;;1]
+ *
+ * field layout must match kernel parser:
+ * proto;src_port;dst_port;host_url;request_url;dict;search_str;ignore
  */
 static int add_custom_rule_feature(int appid, int ignore, const char *regex)
 {
@@ -92,7 +95,7 @@ static int add_custom_rule_feature(int appid, int ignore, const char *regex)
         LOG_WARN("custom rule contains invalid char(# ; , [ ]), skip: %s\n", regex);
         return -1;
     }
-    snprintf(feature_buf, sizeof(feature_buf), "%d custom_rules:[tcp;;;%s;;;%d]",
+    snprintf(feature_buf, sizeof(feature_buf), "%d custom_rules:[tcp;;;%s;;;;%d]",
              appid, regex, ignore);
     ret = af_nl_add_feature(feature_buf);
     if (ret < 0)
@@ -119,7 +122,6 @@ static void strip_domain_tail(char *domain)
  * output ignore flag and pattern(domain or regex content).
  * supported exception syntax examples:
  *   @@||sub.example.org^
- *   @@/sub\.(example|example2)\.org/
  */
 static int parse_rule_line(char *line, int *ignore, char *pattern, int pattern_len)
 {
@@ -154,6 +156,8 @@ static int parse_rule_line(char *line, int *ignore, char *pattern, int pattern_l
         p += 2;
         type = RULE_DOMAIN_SUB;
     } else if (*p == '/') {
+        if (*ignore)
+            return RULE_SKIP;
         char *end = strrchr(p + 1, '/');
         if (end && end > p + 1) {
             *end = '\0';

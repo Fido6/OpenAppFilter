@@ -34,7 +34,6 @@ local rules = s:option(TextValue, "_rules", translate("Rules (AdGuard Home Synta
         "||example.org^ - block example.org and all subdomains<br/>" ..
         "@@||sub.example.org^ - allow sub.example.org and all its subdomains<br/>" ..
         "/REGEX/ - block domains matching the regular expression<br/>" ..
-        "@@/REGEX/ - allow domains matching the regular expression<br/>" ..
         "! comment or # comment - comment line<br/>" ..
         "<br/>" ..
         "Notes: custom rules are matched before the feature library; allow (ignore) rules have higher priority than block rules; " ..
