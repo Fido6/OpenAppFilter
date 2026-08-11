@@ -46,6 +46,12 @@ enum {
     RULE_REGEX,          /* /REGEX/ */
 };
 
+typedef struct {
+    int type;
+    int ignore;
+    char pattern[MAX_CUSTOM_RULE_LINE_LEN];
+} custom_rule_entry_t;
+
 /* convert adguard domain to kernel regexp: '.' -> '\.', '*' -> '.*' */
 static int escape_domain(char *dst, int dst_len, const char *domain)
 {
@@ -205,15 +211,24 @@ static void add_domain_rule(int *appid, int ignore, const char *domain, int type
     }
 }
 
-/* load custom rules from CUSTOM_RULES_FILE and push to kernel via netlink.
- * two passes: block rules first, then allow(ignore) rules.
- * kernel feature list uses list_add(head), later rules match first,
- * so allow rules must be loaded later to take priority over block rules. */
+/* Load custom rules from CUSTOM_RULES_FILE and push them to the kernel.
+ *
+ * The kernel feature list uses list_add(head), so a later netlink message
+ * matches first. We therefore send each group in reverse file order:
+ * block rules first, then allow rules. The resulting match order is:
+ *
+ *   allow rules in file order, then block rules in file order
+ *
+ * This makes an exception such as @@||sub.example.org^ take priority over
+ * ||example.org^ while keeping the order of rules in the same group stable.
+ */
 int load_custom_rules(void)
 {
     FILE *fp = NULL;
     char line[MAX_CUSTOM_RULE_LINE_LEN] = {0};
-    int pass;
+    custom_rule_entry_t rules[MAX_CUSTOM_RULE_NUM];
+    int rule_count = 0;
+    int i;
     int appid = CUSTOM_RULE_APPID_BASE;
     int enable = 1;
     struct uci_context *ctx = NULL;
@@ -237,33 +252,54 @@ int load_custom_rules(void)
         return 0;
     }
 
-    for (pass = 0; pass < 2; pass++) {
-        int rule_num = 0;
-        fseek(fp, 0, SEEK_SET);
-        while (fgets(line, sizeof(line), fp)) {
-            int ignore = 0;
-            int type;
-            char pattern[MAX_CUSTOM_RULE_LINE_LEN] = {0};
+    while (fgets(line, sizeof(line), fp)) {
+        int ignore = 0;
+        int type;
 
-            type = parse_rule_line(line, &ignore, pattern, sizeof(pattern));
-            if (type == RULE_SKIP)
-                continue;
-            /* pass 0: block rules(ignore=0), pass 1: allow rules(ignore=1) */
-            if (ignore != pass)
-                continue;
-            if (appid >= CUSTOM_RULE_APPID_BASE + MAX_CUSTOM_RULE_NUM) {
-                LOG_WARN("custom rule appid exhausted(%d), ignore rest rules\n", appid);
-                goto EXIT;
-            }
-            if (type == RULE_REGEX) {
-                add_custom_rule_feature(appid, ignore, pattern);
-                appid++;
-            } else {
-                add_domain_rule(&appid, ignore, pattern, type);
-            }
-            rule_num++;
+        if (rule_count >= MAX_CUSTOM_RULE_NUM) {
+            LOG_WARN("custom rule count exhausted(%d), ignore rest rules\n",
+                     MAX_CUSTOM_RULE_NUM);
+            break;
         }
-        LOG_DEBUG("custom rule pass %d: %d rules loaded\n", pass, rule_num);
+        type = parse_rule_line(line, &ignore,
+                               rules[rule_count].pattern,
+                               sizeof(rules[rule_count].pattern));
+        if (type == RULE_SKIP)
+            continue;
+        rules[rule_count].type = type;
+        rules[rule_count].ignore = ignore;
+        rule_count++;
+    }
+
+    /* Send blocks first and allows second; list_add(head) reverses this. */
+    for (i = rule_count - 1; i >= 0; i--) {
+        if (rules[i].ignore != 0)
+            continue;
+        if (appid >= CUSTOM_RULE_APPID_BASE + MAX_CUSTOM_RULE_NUM) {
+            LOG_WARN("custom rule appid exhausted(%d), ignore rest rules\n", appid);
+            goto EXIT;
+        }
+        if (rules[i].type == RULE_REGEX) {
+            add_custom_rule_feature(appid, 0, rules[i].pattern);
+            appid++;
+        } else {
+            add_domain_rule(&appid, 0, rules[i].pattern, rules[i].type);
+        }
+    }
+
+    for (i = rule_count - 1; i >= 0; i--) {
+        if (rules[i].ignore != 1)
+            continue;
+        if (appid >= CUSTOM_RULE_APPID_BASE + MAX_CUSTOM_RULE_NUM) {
+            LOG_WARN("custom rule appid exhausted(%d), ignore rest rules\n", appid);
+            goto EXIT;
+        }
+        if (rules[i].type == RULE_REGEX) {
+            add_custom_rule_feature(appid, 1, rules[i].pattern);
+            appid++;
+        } else {
+            add_domain_rule(&appid, 1, rules[i].pattern, rules[i].type);
+        }
     }
 EXIT:
     fclose(fp);
