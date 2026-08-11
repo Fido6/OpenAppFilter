@@ -116,7 +116,11 @@ static void strip_domain_tail(char *domain)
 }
 
 /* parse one adguard rule line, return rule type,
- * output ignore flag and pattern(domain or regex content) */
+ * output ignore flag and pattern(domain or regex content).
+ * supported exception syntax examples:
+ *   @@||sub.example.org^
+ *   @@/sub\.(example|example2)\.org/
+ */
 static int parse_rule_line(char *line, int *ignore, char *pattern, int pattern_len)
 {
     char *p = line;
@@ -133,6 +137,8 @@ static int parse_rule_line(char *line, int *ignore, char *pattern, int pattern_l
     if (strncmp(p, "@@", 2) == 0) {
         *ignore = 1;
         p += 2;
+        while (*p && isspace(*p))
+            p++;
     }
 
     if (strncmp(p, "||", 2) == 0) {
