@@ -29,6 +29,23 @@ function enable.write(self, section, value)
     os.execute("killall -SIGUSR1 oafd")
 end
 
+local time_enable = s:option(Flag, "custom_rule_time_enable", translate("Run During Time Rules"),
+    translate("If enabled, custom rules only take effect while the configured time rule is active."))
+time_enable.rmempty = false
+
+function time_enable.cfgvalue(self, section)
+    local v = m.uci:get("appfilter", "global", "custom_rule_time_enable")
+    if v == nil then
+        return "0"
+    end
+    return v
+end
+
+function time_enable.write(self, section, value)
+    cbi.Flag.write(self, section, value)
+    os.execute("killall -SIGUSR1 oafd")
+end
+
 local rules = s:option(TextValue, "_rules", translate("Rules (AdGuard Home Syntax)"),
     translate("One rule per line:<br/>" ..
         "||example.org^ - block example.org and all subdomains<br/>" ..
@@ -37,7 +54,7 @@ local rules = s:option(TextValue, "_rules", translate("Rules (AdGuard Home Synta
         "! comment or # comment - comment line<br/>" ..
         "<br/>" ..
         "Notes: custom rules are matched before the feature library; allow (ignore) rules have higher priority than block rules; " ..
-        "regex does not support | ( ) { } and the rule must not contain # ; , [ ]; " ..
+        "regex supports |, grouping and character classes; the rule must not contain # ; , or { }; " ..
         "up to 500 rules are supported; changes take effect immediately after saving."))
 rules.rows = 22
 rules.rmempty = false

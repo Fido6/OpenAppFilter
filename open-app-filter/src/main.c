@@ -49,6 +49,7 @@ af_config_t g_af_config;
 int g_hnat_init = 0;
 int g_feature_update = 0;
 int g_feature_update_time = 0;
+int g_custom_rule_time_active = 1;
 void oaf_timeout_handler(struct uloop_timeout *t);
 
 void af_init_time_status(void){
@@ -655,13 +656,27 @@ int af_check_time_valid(af_time_config_t *t_config) {
 }
 
 
-void update_oaf_status(void){
+static void update_custom_rule_time_state(int time_active)
+{
+    int next_active = custom_rule_time_mode_enabled() ? time_active : 1;
+
+    if (g_custom_rule_time_active != next_active) {
+        LOG_WARN("custom rule time state changed: %d -> %d\n",
+                 g_custom_rule_time_active, next_active);
+        g_custom_rule_time_active = next_active;
+        g_feature_update = 1;
+    }
+}
+
+int update_oaf_status(void){
     int ret = 0;
     int cur_enable = 0;
     if(g_af_config.global.enable == 1){
 		ret = af_check_time_valid(&g_af_config.time);
 	}
     update_oaf_proc_value("enable", ret == 1 ? "1" : "0");
+    update_custom_rule_time_state(ret == 1);
+    return ret;
 }
 
 void update_oaf_record_status(void){
@@ -741,6 +756,7 @@ int reload_feature(void){
         LOG_ERROR("Failed to load feature to kernel\n");
         return -1;
     }
+    update_oaf_status();
     load_custom_rules();
     clean_invalid_app_records();
     clean_invalid_domain_records();

@@ -33,6 +33,7 @@ THE SOFTWARE.
 
 /* af_nl_add_feature is defined in main.c */
 extern int af_nl_add_feature(char *feature);
+extern int g_custom_rule_time_active;
 
 /* max length of host_url regex in kernel feature node
  * (oaf kernel MAX_HOST_URL_LEN = 128, reserve 4 bytes) */
@@ -51,6 +52,20 @@ typedef struct {
     int ignore;
     char pattern[MAX_CUSTOM_RULE_LINE_LEN];
 } custom_rule_entry_t;
+
+int custom_rule_time_mode_enabled(void)
+{
+    int enable = 0;
+    struct uci_context *ctx = uci_alloc_context();
+
+    if (ctx) {
+        int v = af_uci_get_int_value(ctx, "appfilter.global.custom_rule_time_enable");
+        if (v >= 0)
+            enable = v;
+        uci_free_context(ctx);
+    }
+    return enable == 1;
+}
 
 /* convert adguard domain to kernel regexp: '.' -> '\.', '*' -> '.*' */
 static int escape_domain(char *dst, int dst_len, const char *domain)
@@ -96,9 +111,8 @@ static int add_custom_rule_feature(int appid, int ignore, const char *regex)
         LOG_WARN("custom rule regex too long, skip: %s\n", regex);
         return -1;
     }
-    if (strstr(regex, "#") || strstr(regex, ";") || strstr(regex, ",") ||
-        strstr(regex, "[") || strstr(regex, "]")) {
-        LOG_WARN("custom rule contains invalid char(# ; , [ ]), skip: %s\n", regex);
+    if (strstr(regex, "#") || strstr(regex, ";") || strstr(regex, ",")) {
+        LOG_WARN("custom rule contains invalid char(# ; ,), skip: %s\n", regex);
         return -1;
     }
     snprintf(feature_buf, sizeof(feature_buf), "%d custom_rules:[tcp;;;%s;;;;%d]",
@@ -243,6 +257,10 @@ int load_custom_rules(void)
     }
     if (!enable) {
         LOG_WARN("custom rule is disabled, skip load\n");
+        return 0;
+    }
+    if (custom_rule_time_mode_enabled() && !g_custom_rule_time_active) {
+        LOG_WARN("custom rule time mode is enabled and current time is inactive, skip load\n");
         return 0;
     }
 

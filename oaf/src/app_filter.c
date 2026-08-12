@@ -396,16 +396,12 @@ static void af_init_feature(char *feature_str)
 	}
 
 	k_sscanf(feature_str, "%d%[^:]", &app_id, app_name);
-	while (*p++)
-	{
-		if (*p == '[')
-		{
-			pos = p + 1;
-			continue;
-		}
-		if (*p == ']' && pos != NULL)
-		{
-			len = p - pos;
+	pos = strchr(feature_str, '[');
+	if (pos) {
+		char *end = strrchr(pos + 1, ']');
+		if (end && end > pos) {
+			pos++;
+			len = end - pos;
 		}
 	}
 

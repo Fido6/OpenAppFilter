@@ -833,11 +833,17 @@ msgstr "启用自定义规则"
 msgid "If disabled, all custom rules will not take effect."
 msgstr "关闭后所有自定义规则将不生效。"
 
+msgid "Run During Time Rules"
+msgstr "时间段执行"
+
+msgid "If enabled, custom rules only take effect while the configured time rule is active."
+msgstr "开启后，自定义规则只会在已配置的时间规则生效时执行。"
+
 msgid "Rules (AdGuard Home Syntax)"
 msgstr "规则（AdGuard Home 语法）"
 
-msgid "One rule per line:<br/>||example.org^ - block example.org and all subdomains<br/>@@||sub.example.org^ - allow sub.example.org and all its subdomains<br/>/REGEX/ - block domains matching the regular expression<br/>! comment or # comment - comment line<br/><br/>Notes: custom rules are matched before the feature library; allow (ignore) rules have higher priority than block rules; regex does not support | ( ) { } and the rule must not contain # ; , [ ]; up to 500 rules are supported; changes take effect immediately after saving."
-msgstr "每行一条规则：<br/>||example.org^ - 阻止 example.org 及其所有子域名<br/>@@||sub.example.org^ - 放行 sub.example.org 及其所有多级子域名<br/>/REGEX/ - 阻止与正则表达式匹配的域名<br/>! 注释 或 # 注释 - 注释行<br/><br/>说明：自定义规则在特征库之前匹配；放行（白名单）规则优先级高于阻止规则；正则不支持 | ( ) { }，规则内容不能包含 # ; , [ ]；最多支持 500 条规则；保存后立即生效。"
+msgid "One rule per line:<br/>||example.org^ - block example.org and all subdomains<br/>@@||sub.example.org^ - allow sub.example.org and all its subdomains<br/>/REGEX/ - block domains matching the regular expression<br/>! comment or # comment - comment line<br/><br/>Notes: custom rules are matched before the feature library; allow (ignore) rules have higher priority than block rules; regex supports |, grouping and character classes; the rule must not contain # ; , or { }; up to 500 rules are supported; changes take effect immediately after saving."
+msgstr "每行一条规则：<br/>||example.org^ - 阻止 example.org 及其所有子域名<br/>@@||sub.example.org^ - 放行 sub.example.org 及其所有多级子域名<br/>/REGEX/ - 阻止与正则表达式匹配的域名<br/>! 注释 或 # 注释 - 注释行<br/><br/>说明：自定义规则在特征库之前匹配；放行（白名单）规则优先级高于阻止规则；正则支持 |、分组和字符组；规则内容不能包含 # ; , 或 { }；最多支持 500 条规则；保存后立即生效。"
 
 msgid "Domain Details"
 msgstr "域名访问详情"

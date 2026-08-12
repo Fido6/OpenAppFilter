@@ -33,4 +33,7 @@ THE SOFTWARE.
 /* load custom rules from file and push to kernel via netlink */
 int load_custom_rules(void);
 
+/* returns whether custom rules should follow the configured time rule */
+int custom_rule_time_mode_enabled(void);
+
 #endif
