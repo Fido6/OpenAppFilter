@@ -248,7 +248,6 @@ jobs:
 
           target_safe=$(echo "${OWRT_TARGET}" | tr '/' '-')
           echo "TARGET_SAFE=$target_safe" >> "$GITHUB_ENV"
-          zip -jr "upload/oaf_${target_safe}_${OWRT_VERSION}.zip" upload/*.apk upload/build_info.txt
           echo "status=success" >> "$GITHUB_OUTPUT"
 
       - name: Upload artifacts
@@ -258,7 +257,6 @@ jobs:
           name: oaf-${{ env.TARGET_SAFE }}-${{ inputs.openwrt_version || '25.12.4' }}
           path: |
             sdk/upload/*.apk
-            sdk/upload/*.zip
             sdk/upload/build_info.txt
           if-no-files-found: error
 
@@ -271,7 +269,6 @@ jobs:
           tag_name: ${{ inputs.release_tag }}
           files: |
             sdk/upload/*.apk
-            sdk/upload/*.zip
           body: |
             OpenAppFilter packages built with OpenWrt SDK
             - OpenWrt: ${{ inputs.openwrt_version || '25.12.4' }}
