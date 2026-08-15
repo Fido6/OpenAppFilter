@@ -670,12 +670,19 @@ static void update_custom_rule_time_state(int time_active)
 
 int update_oaf_status(void){
     int ret = 0;
-    int cur_enable = 0;
-    if(g_af_config.global.enable == 1){
+    int custom_rule_only = 0;
+    int custom_rule_keeps_filter = 0;
+    if(g_af_config.global.enable == 1 && g_af_config.global.auto_load_engine == 1){
 		ret = af_check_time_valid(&g_af_config.time);
+        custom_rule_keeps_filter = custom_rule_enabled() && !custom_rule_time_mode_enabled();
+        if (ret != 1 && custom_rule_keeps_filter) {
+            ret = 1;
+            custom_rule_only = 1;
+        }
 	}
     update_oaf_proc_value("enable", ret == 1 ? "1" : "0");
-    update_custom_rule_time_state(ret == 1);
+    update_oaf_proc_value("custom_rule_only_mode", custom_rule_only == 1 ? "1" : "0");
+    update_custom_rule_time_state(custom_rule_only ? 0 : ret == 1);
     return ret;
 }
 

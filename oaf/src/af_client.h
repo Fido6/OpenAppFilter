@@ -33,6 +33,7 @@ enum NFC_PKT_DIR
 #define MIN_REPORT_URL_LEN 4
 #define MAX_REPORT_URL_LEN 64
 #define MAX_DOMAIN_VISIT_NUM 24
+#define DOMAIN_VISIT_KEEP_TIME (10 * 60)
 
 typedef struct flow_stat
 {
@@ -64,8 +65,6 @@ typedef struct app_domain_visit_info
 	char url[MAX_REPORT_URL_LEN];
 	unsigned long latest_time;
 	unsigned int latest_action;
-	long long up_bytes;
-	long long down_bytes;
 } app_domain_visit_info_t;
 
 typedef struct visiting_info{

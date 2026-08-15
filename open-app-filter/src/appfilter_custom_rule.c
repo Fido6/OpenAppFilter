@@ -67,6 +67,20 @@ int custom_rule_time_mode_enabled(void)
     return enable == 1;
 }
 
+int custom_rule_enabled(void)
+{
+    int enable = 1;
+    struct uci_context *ctx = uci_alloc_context();
+
+    if (ctx) {
+        int v = af_uci_get_int_value(ctx, "appfilter.global.custom_rule_enable");
+        if (v >= 0)
+            enable = v;
+        uci_free_context(ctx);
+    }
+    return enable == 1;
+}
+
 /* convert adguard domain to kernel regexp: '.' -> '\.', '*' -> '.*' */
 static int escape_domain(char *dst, int dst_len, const char *domain)
 {
@@ -244,18 +258,8 @@ int load_custom_rules(void)
     int rule_count = 0;
     int i;
     int appid = CUSTOM_RULE_APPID_BASE;
-    int enable = 1;
-    struct uci_context *ctx = NULL;
 
-    /* custom_rule_enable, default enable */
-    ctx = uci_alloc_context();
-    if (ctx) {
-        int v = af_uci_get_int_value(ctx, "appfilter.global.custom_rule_enable");
-        if (v >= 0)
-            enable = v;
-        uci_free_context(ctx);
-    }
-    if (!enable) {
+    if (!custom_rule_enabled()) {
         LOG_WARN("custom rule is disabled, skip load\n");
         return 0;
     }

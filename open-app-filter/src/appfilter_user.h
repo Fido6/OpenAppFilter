@@ -38,6 +38,7 @@ THE SOFTWARE.
 #define MAX_APP_ID_NUM 512
 #define MAX_SUPPORT_DEV_NUM 256
 #define SECONDS_PER_DAY (24 * 3600)
+#define DOMAIN_VISIT_KEEP_TIME (10 * 60)
 #define MAX_NICKNAME_SIZE 64
 #define MAX_REPORT_URL_LEN 64
 
@@ -58,8 +59,6 @@ typedef struct visit_domain_info
     char url[MAX_REPORT_URL_LEN];
     u_int32_t latest_time;
     int action;
-    unsigned long long up_flow;
-    unsigned long long down_flow;
     struct visit_domain_info *next;
 } visit_domain_info_t;
 

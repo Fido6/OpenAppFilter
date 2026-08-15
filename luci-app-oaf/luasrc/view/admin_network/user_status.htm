@@ -21,6 +21,7 @@
 		let visit_total_pages = 1;
 		let visit_total_count = 0;
 		let current_mac = '';
+		let details_refresh_timer = null;
 
 		function getAllUsersData(page, size) {
 			if (page === undefined) page = cur_page;
@@ -463,6 +464,11 @@
 			updateDeviceInfoTitle(mac);
 			current_mac = mac;
 			visit_cur_page = 1; // Reset to first page when opening details
+			domain_visit_cur_page = 1;
+			if (details_refresh_timer) {
+				clearInterval(details_refresh_timer);
+				details_refresh_timer = null;
+			}
 
 			new XHR().get('<%=url('admin/network/dev_visit_time')%>/' + mac, null,
 				function (x, st) {
@@ -473,6 +479,11 @@
 
 			getVisitListData(mac, visit_cur_page, visit_page_size);
 			getDomainVisitListData(mac, 1, domain_visit_page_size);
+			details_refresh_timer = setInterval(function() {
+				if (!current_mac) return;
+				getVisitListData(current_mac, visit_cur_page, visit_page_size);
+				getDomainVisitListData(current_mac, domain_visit_cur_page, domain_visit_page_size);
+			}, 2000);
 		}
 		
 		function getVisitListData(mac, page, size) {
@@ -538,9 +549,6 @@
 
 					var lt_date = new Date(list[i].lt * 1000);
 					tr.insertCell(-1).innerHTML = lt_date.toLocaleString();
-
-					tr.insertCell(-1).innerHTML = formatFlow(list[i].up_flow || 0);
-					tr.insertCell(-1).innerHTML = formatFlow(list[i].down_flow || 0);
 
 					var action_status = list[i].act == 1 ?
 						'<span style="color: red;"><%:Filtered%></span>' :
@@ -738,6 +746,11 @@
 			var modal = document.getElementById(modalId);
 			if (modal) {
 				modal.style.display = 'none';
+			}
+			if (modalId === 'detailsModal' && details_refresh_timer) {
+				clearInterval(details_refresh_timer);
+				details_refresh_timer = null;
+				current_mac = '';
 			}
 		}
 
@@ -1037,14 +1050,12 @@
 							<th class="th"><%:App Name%></th>
 							<th class="th"><%:Domain%></th>
 							<th class="th"><%:Last Visit Time%></th>
-							<th class="th"><%:Up Traffic%></th>
-							<th class="th"><%:Down Traffic%></th>
 							<th class="th"><%:Filter Status%></th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr class="tr">
-							<td class="td" colspan="6"><em><br />
+							<td class="td" colspan="4"><em><br />
 									<%:Collecting data...%>
 								</em></td>
 						</tr>

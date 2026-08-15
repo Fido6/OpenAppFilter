@@ -303,33 +303,36 @@
             var tb = document.getElementById('user_status_table');
             var str = JSON.stringify(st);
             if (st && tb) {
+                var list = Array.isArray(st) ? st : (st.list || []);
                 /* clear all rows */
                 while (tb.rows.length > 1)
                     tb.deleteRow(1);
-                for (var i = 0; i < st.length; i++) {
+                for (var i = 0; i < list.length; i++) {
                     var action_status = ""
-                    if (st[i].latest_action == 1)
+                    var latest_action = list[i].latest_action !== undefined ? list[i].latest_action : list[i].act;
+                    if (latest_action == 1)
                         action_status = "<%:Filtered%>"
                     else
                         action_status = "<%:Unfiltered%>"
                     var hostname = ""
-                    if (st[i].hostname == "" || st[i].hostname == "*") {
+                    if (list[i].hostname == "" || list[i].hostname == "*") {
                         hostname = "--";
                     }
                     else {
-                        hostname = st[i].hostname;
+                        hostname = list[i].hostname;
                     }
                     var tr = tb.insertRow(-1);
                     tr.className = 'tr cbi-rowstyle-' + ((i % 2) + 1);
-                    tr.insertCell(-1).innerHTML = st[i].appname;
+                    tr.insertCell(-1).innerHTML = list[i].appname || list[i].name || "--";
                     tr.insertCell(-1).innerHTML = hostname;
-                    tr.insertCell(-1).innerHTML = st[i].mac;
-                    tr.insertCell(-1).innerHTML = st[i].first_time;
-                    var hour = parseInt(st[i].total_time / 3600);
-                    var seconds = st[i].total_time % 3600;
+                    tr.insertCell(-1).innerHTML = list[i].mac || (st.mac || "--");
+                    tr.insertCell(-1).innerHTML = list[i].first_time || new Date((list[i].ft || 0) * 1000).toLocaleString();
+                    var total_time = list[i].total_time !== undefined ? list[i].total_time : (list[i].tt || 0);
+                    var hour = parseInt(total_time / 3600);
+                    var seconds = total_time % 3600;
                     var min = parseInt(seconds / 60)
                     var total_time_str;
-                    if (st[i].latest_action == 1)
+                    if (latest_action == 1)
                         total_time_str = "-"
                     else {
                         if (hour > 0)

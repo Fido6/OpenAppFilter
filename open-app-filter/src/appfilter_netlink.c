@@ -152,9 +152,7 @@ void appfilter_nl_handler(struct uloop_fd *u, unsigned int ev)
     
     struct json_object *up_flow_obj = json_object_object_get(root, "up_flow");
     struct json_object *down_flow_obj = json_object_object_get(root, "down_flow");
-    unsigned long long total_up_bytes = 0;
-    unsigned long long total_down_bytes = 0;
-    
+
     if (up_flow_obj) {
         node->today_up_bytes += (unsigned long long)json_object_get_int64(up_flow_obj) * 1024;
     }
@@ -225,9 +223,6 @@ void appfilter_nl_handler(struct uloop_fd *u, unsigned int ev)
                 struct json_object *url_obj = json_object_object_get(d_obj, "url");
                 struct json_object *lt_obj = json_object_object_get(d_obj, "latest_time");
                 struct json_object *act_obj = json_object_object_get(d_obj, "latest_action");
-                struct json_object *up_obj = json_object_object_get(d_obj, "up_bytes");
-                struct json_object *down_obj = json_object_object_get(d_obj, "down_bytes");
-
                 if (!appid_obj || !url_obj)
                     continue;
 
@@ -243,10 +238,6 @@ void appfilter_nl_handler(struct uloop_fd *u, unsigned int ev)
                         dnode->latest_time = json_object_get_int(lt_obj);
                     if (act_obj)
                         dnode->action = json_object_get_int(act_obj);
-                    if (up_obj)
-                        dnode->up_flow += (unsigned long long)json_object_get_int64(up_obj);
-                    if (down_obj)
-                        dnode->down_flow += (unsigned long long)json_object_get_int64(down_obj);
                 }
             }
         }

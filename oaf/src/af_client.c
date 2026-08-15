@@ -303,9 +303,15 @@ static int __af_visit_info_report(af_client_info_t *node)
 	{
 		cJSON *domain_array = cJSON_CreateArray();
 		int domain_count = 0;
+		unsigned long cur_time = af_get_timestamp_sec();
 		for (i = 0; i < node->domain_visit_num && domain_count < MAX_DOMAIN_VISIT_NUM; i++) {
 			if (node->domain_visit[i].app_id == 0 || strlen(node->domain_visit[i].url) == 0)
 				continue;
+			if (cur_time > node->domain_visit[i].latest_time &&
+				(cur_time - node->domain_visit[i].latest_time) > DOMAIN_VISIT_KEEP_TIME) {
+				memset(&node->domain_visit[i], 0x0, sizeof(app_domain_visit_info_t));
+				continue;
+			}
 			if (domain_count >= 8) /* limit per report to 8 to avoid msg overflow */
 				break;
 			cJSON *d_obj = cJSON_CreateObject();
@@ -313,12 +319,7 @@ static int __af_visit_info_report(af_client_info_t *node)
 			cJSON_AddStringToObject(d_obj, "url", node->domain_visit[i].url);
 			cJSON_AddNumberToObject(d_obj, "latest_time", node->domain_visit[i].latest_time);
 			cJSON_AddNumberToObject(d_obj, "latest_action", node->domain_visit[i].latest_action);
-			cJSON_AddNumberToObject(d_obj, "up_bytes", node->domain_visit[i].up_bytes);
-			cJSON_AddNumberToObject(d_obj, "down_bytes", node->domain_visit[i].down_bytes);
 			cJSON_AddItemToArray(domain_array, d_obj);
-			/* reset flow counters after report */
-			node->domain_visit[i].up_bytes = 0;
-			node->domain_visit[i].down_bytes = 0;
 			domain_count++;
 		}
 		cJSON_AddItemToObject(root_obj, "domain_info", domain_array);
@@ -612,7 +613,7 @@ static void client_timer_handler(unsigned long data)
         return;
     }
 	
-	if (client->timer_count >= 30) {
+	if (client->timer_count >= 1) {
 		__af_visit_info_report(client);
 		client->timer_count = 0;
 	}

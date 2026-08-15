@@ -1091,11 +1091,16 @@ static int match_app_filter_user(af_client_info_t *client){
 
 static int match_app_filter_rule(int appid, af_client_info_t *client)
 {
+	int is_custom_rule = (appid >= AF_CUSTOM_RULE_APPID_BASE && appid < AF_CUSTOM_RULE_APPID_MAX);
+
 	if (!match_app_filter_user(client))
 		return AF_FALSE;
 
+	if (g_custom_rule_only_mode && !is_custom_rule)
+		return AF_FALSE;
+
 	// custom rule appid (AdGuard style), always filter, independent of app status config
-	if (appid >= AF_CUSTOM_RULE_APPID_BASE && appid < AF_CUSTOM_RULE_APPID_MAX)
+	if (is_custom_rule)
 		return AF_TRUE;
 
 	// All apps mode: skip appid check, match user only
@@ -1157,7 +1162,7 @@ static int af_update_client_app_info(af_client_info_t *node, int app_id, int dro
 }
 
 static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int drop,
-									   const char *url, unsigned int pkt_len, int pkt_dir)
+									   const char *url)
 {
 	int i;
 	int index = -1;
@@ -1168,23 +1173,7 @@ static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int d
 	if (!node || app_id <= 0)
 		return -1;
 
-	/* Without a valid URL, we cannot create or match domain records.
-	 * Only update byte counts on existing records that match the app_id.
-	 * This path is taken when the connection is already identified (CT mark cache),
-	 * where DPI was not re-run and visiting_url is stale. */
 	if (!url || strlen(url) < MIN_REPORT_URL_LEN || strlen(url) >= MAX_REPORT_URL_LEN) {
-		/* Try to find ANY existing record with this app_id to accumulate bytes */
-		for (i = 0; i < node->domain_visit_num; i++) {
-			if (node->domain_visit[i].app_id == app_id) {
-				node->domain_visit[i].latest_time = af_get_timestamp_sec();
-				if (pkt_dir == PKT_DIR_UP)
-					node->domain_visit[i].up_bytes += pkt_len;
-				else
-					node->domain_visit[i].down_bytes += pkt_len;
-				return 0;
-			}
-		}
-		/* No existing record for this app_id without URL - skip */
 		return -1;
 	}
 
@@ -1196,6 +1185,15 @@ static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int d
 			strcmp(node->domain_visit[i].url, url) == 0) {
 			index = i;
 			break;
+		}
+	}
+
+	if (index < 0) {
+		for (i = 0; i < node->domain_visit_num; i++) {
+			if (node->domain_visit[i].app_id == 0) {
+				index = i;
+				break;
+			}
 		}
 	}
 
@@ -1222,10 +1220,6 @@ static int af_update_domain_visit_info(af_client_info_t *node, int app_id, int d
 
 	node->domain_visit[index].latest_time = cur_time;
 	node->domain_visit[index].latest_action = drop;
-	if (pkt_dir == PKT_DIR_UP)
-		node->domain_visit[index].up_bytes += pkt_len;
-	else
-		node->domain_visit[index].down_bytes += pkt_len;
 
 	return 0;
 }
@@ -1414,7 +1408,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	conn->total_pkts++;
     spin_unlock(&af_conn_lock);
 
-	if (conn->drop && g_app_filter_mode){
+	if (conn->drop && g_app_filter_mode && !g_custom_rule_only_mode){
 		AF_LMT_INFO("bypass mod drop all app\n");
 		return NF_DROP;
 	}
@@ -1423,7 +1417,12 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	{
 		flow.app_id = conn->app_id;
 		flow.drop = conn->drop;
-		if (g_disable_quic && flow.drop && flow.app_id == APPID_QUIC){
+		if (g_custom_rule_only_mode &&
+			(flow.app_id < AF_CUSTOM_RULE_APPID_BASE || flow.app_id >= AF_CUSTOM_RULE_APPID_MAX)){
+			flow.drop = 0;
+			conn->drop = 0;
+		}
+		if (!g_custom_rule_only_mode && g_disable_quic && flow.drop && flow.app_id == APPID_QUIC){
 			AF_LMT_INFO("bypass drop quic\n");
 			return NF_DROP;
 		}
@@ -1441,7 +1440,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		}
 
 		
-		if (g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
+		if (!g_custom_rule_only_mode && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
 			conn->app_id = APPID_QUIC;
 			conn->drop = 1;
 			AF_LMT_INFO("match quic proto, drop\n");
@@ -1500,8 +1499,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		if (!conn->ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
-										client->visiting.visiting_url,
-										skb->len, get_af_pkt_dir(skb->dev));
+										client->visiting.visiting_url);
 		}
 		else{
 			AF_LMT_DEBUG("update ignore appid = %d, drop = %d\n", flow.app_id, flow.drop);
@@ -1585,12 +1583,12 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		
 		if (g_oaf_filter_enable){
 			// quic proto
-			if (g_disable_quic && app_id == APPID_QUIC && ct_action){
+			if (!g_custom_rule_only_mode && g_disable_quic && app_id == APPID_QUIC && ct_action){
 				AF_LMT_INFO("mark = %x,drop appid = %d\n", ct->mark, app_id);
 				return NF_DROP;
 			}
 
-			if (g_app_filter_mode && ct_action){
+			if (g_app_filter_mode && ct_action && !g_custom_rule_only_mode){
 				AF_LMT_INFO("ct drop all app\n");
 				return NF_DROP;
 			}
@@ -1599,6 +1597,11 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		if (app_id > 1000 && app_id < 32000)
 		{
 			AF_LMT_DEBUG("appid = %d, ct_action = %d\n", app_id, ct_action);
+			if (g_custom_rule_only_mode &&
+				(app_id < AF_CUSTOM_RULE_APPID_BASE || app_id >= AF_CUSTOM_RULE_APPID_MAX)){
+				ct->mark &= ~NF_DROP_BIT;
+				ct_action = 0;
+			}
 			if (!flow.ignore && check_app_action_changed(ct_action, app_id, client)){
 				if (ct_action) // drop --> accept
 					ct->mark &= ~NF_DROP_BIT;
@@ -1614,9 +1617,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 				if (!flow.ignore){
 					af_update_client_app_info(client, app_id, ct_action);
 					/* CT mark cache path: DPI not re-run, visiting_url is stale */
-					af_update_domain_visit_info(client, app_id, ct_action,
-												NULL,
-												skb->len, get_af_pkt_dir(dev));
+					af_update_domain_visit_info(client, app_id, ct_action, NULL);
 				}
 				else{
 					AF_LMT_DEBUG(" ignore appid = %d, drop = %d, not update status\n", app_id, ct_action);
@@ -1650,7 +1651,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		return NF_ACCEPT;
 
 
-	if (g_oaf_filter_enable && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
+	if (!g_custom_rule_only_mode && g_oaf_filter_enable && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
 		ct->mark = (ct->mark & 0xFFFF0000) | (APPID_QUIC & 0xFFFF);
 		ct->mark |= NF_DROP_BIT;	
 		AF_LMT_INFO("match quick drop,  %s %pI4(%d)--> %pI4(%d) len = %d [%02x %02x %02x %02x %02x %02x %02x %02x] \n ", IPPROTO_TCP == flow.l4_protocol ? "tcp" : "udp",
@@ -1723,8 +1724,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		if (!flow.ignore){
 			af_update_client_app_info(client, flow.app_id, flow.drop);
 			af_update_domain_visit_info(client, flow.app_id, flow.drop,
-										client->visiting.visiting_url,
-										skb->len, get_af_pkt_dir(dev));
+										client->visiting.visiting_url);
 		}
 
 		AF_CLIENT_UNLOCK_W();

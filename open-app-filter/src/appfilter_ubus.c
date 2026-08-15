@@ -212,25 +212,23 @@ appfilter_handle_dev_visit_list(struct ubus_context *ctx, struct ubus_object *ob
     json_object_object_add(root_obj, "hostname", json_object_new_string(node->hostname));
     json_object_object_add(root_obj, "mac", json_object_new_string(node->mac));
     json_object_object_add(root_obj, "ip", json_object_new_string(node->ip));
+    flush_expire_domain_info(node);
 
     for (j = 0; j < MAX_VISIT_HASH_SIZE; j++)
-    { 
+    {
         visit_info_t *p_info = node->visit_htable[j];
         while (p_info)
         {
-            char *first_time_str = format_time(p_info->first_time);
-            char *latest_time_str = format_time(p_info->latest_time);
             int total_time = p_info->latest_time - p_info->first_time;
-            if (strlen(get_app_name_by_id(p_info->appid)) == 0){
-                p_info = p_info->next;
-                if (first_time_str)
-                    free(first_time_str);
-                if (latest_time_str)
-                    free(latest_time_str);
-                continue;
-            }
+            char *app_name = get_app_name_by_id(p_info->appid);
             struct json_object *visit_obj = json_object_new_object();
-            json_object_object_add(visit_obj, "name", json_object_new_string(get_app_name_by_id(p_info->appid)));
+            if (app_name && strlen(app_name) > 0)
+                json_object_object_add(visit_obj, "name", json_object_new_string(app_name));
+            else {
+                char fallback_name[32] = {0};
+                snprintf(fallback_name, sizeof(fallback_name), "APP %d", p_info->appid);
+                json_object_object_add(visit_obj, "name", json_object_new_string(fallback_name));
+            }
             json_object_object_add(visit_obj, "id", json_object_new_int(p_info->appid));
             if (check_app_icon_exist(p_info->appid)) {
                 json_object_object_add(visit_obj, "icon", json_object_new_int(1));
@@ -243,10 +241,6 @@ appfilter_handle_dev_visit_list(struct ubus_context *ctx, struct ubus_object *ob
             json_object_object_add(visit_obj, "tt", json_object_new_int(total_time));
             json_object_array_add(visit_array, visit_obj);
 
-            if (first_time_str)
-                free(first_time_str);
-            if (latest_time_str)
-                free(latest_time_str);
             p_info = p_info->next;
         }
     }
@@ -452,6 +446,7 @@ handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
         free(msg_obj_str);
         return 0;
     }
+    flush_expire_domain_info(node);
 
     struct json_object *root_obj = json_object_new_object();
     struct json_object *list_array = json_object_new_array();
@@ -475,8 +470,6 @@ handle_dev_domain_list(struct ubus_context *ctx, struct ubus_object *obj,
                 json_object_object_add(d_obj, "url", json_object_new_string(p->url));
                 json_object_object_add(d_obj, "lt", json_object_new_int(p->latest_time));
                 json_object_object_add(d_obj, "act", json_object_new_int(p->action));
-                json_object_object_add(d_obj, "up_flow", json_object_new_int64(p->up_flow));
-                json_object_object_add(d_obj, "down_flow", json_object_new_int64(p->down_flow));
                 /* app name and icon */
                 char *name = get_app_name_by_id(p->appid);
                 json_object_object_add(d_obj, "name", json_object_new_string(name ? name : "unknown"));

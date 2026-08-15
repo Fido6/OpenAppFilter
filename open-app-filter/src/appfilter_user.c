@@ -146,8 +146,7 @@ void flush_expire_domain_info(dev_node_t *dev)
         while (p)
         {
             tmp = p->next;
-            /* expire domain records older than 24h */
-            if (cur_time > p->latest_time && (cur_time - p->latest_time) > SECONDS_PER_DAY)
+            if (cur_time > p->latest_time && (cur_time - p->latest_time) > DOMAIN_VISIT_KEEP_TIME)
             {
                 if (prev)
                     prev->next = tmp;
@@ -860,6 +859,7 @@ void check_dev_visit_info_expire(void)
         dev_node_t *node = dev_hash_table[i];
         while (node)
         {
+            flush_expire_domain_info(node);
             for (j = 0; j < MAX_VISIT_HASH_SIZE; j++)
             {
                 visit_info_t *p_info = node->visit_htable[j];
