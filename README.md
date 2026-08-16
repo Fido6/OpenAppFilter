@@ -1,57 +1,118 @@
+## 介绍
 
+OAF 是一款基于 OpenWrt 的家长控制和应用过滤软件。它通过 DPI 识别游戏、视频、即时通讯等应用流量，例如 TikTok、YouTube、Facebook 等，目前支持数百种应用。
 
-## Introduction
-OAF is a parental control software based on OpenWrt. It supports popular applications across gaming, video streaming, instant messaging, such as TikTok, YouTube, Facebook. Currently, it supports hundreds of different applications.   
-For a detailed introduction, please visit [www.openappfilter.com](http://www.openappfilter.com).
+详细介绍可访问 [www.openappfilter.com](http://www.openappfilter.com)。
 
-## Features
-- DPI-based protocol identification: Supports Layer 7 protocol parsing and HTTPS domain resolution, and operates independently of DNS.
-- Industry-standard architecture:  Flow-based identification for high efficiency, with extremely low hardware requirements.
-- Supports custom protocol signatures: Offers a high degree of flexibility and customization.
-- Supports installation as a plugin on OpenWrt systems: Compatible with all OpenWrt-enabled devices.You can download the plugin package corresponding to your architecture from the releases page.
+## 功能特性
 
-## How to Compile
-1. Prepare a set of OpenWrt source code that has already been successfully compiled into firmware.
-(Instructions for compiling OpenWrt source code can be found via independent tutorials and will not be covered here.)
-2. Clone the OAF source code.
-Navigate to the root directory of your OpenWrt source code and execute the following command:
+- 基于 DPI 的协议识别：支持七层协议解析和 HTTPS 域名识别，不依赖 DNS。
+- 基于流的识别架构：效率较高，对硬件要求较低。
+- 支持自定义协议特征：可按现有特征库格式扩展应用识别规则。
+- 支持作为 OpenWrt 插件安装：包含 LuCI 页面、用户态服务和内核模块。
+- 支持自定义规则：可在 LuCI 页面中维护部分 AdGuard Home 风格的域名过滤规则。
+
+## 本分支改动
+
+本分支在 OAF 基础上新增了自定义规则能力，入口位于 LuCI：
+
+```text
+服务 / App Filter / Custom Rules
 ```
-git clone https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter
+
+自定义规则保存后会写入：
+
+```text
+/etc/appfilter/custom_rules.txt
 ```
-3. Enable the OAF compilation options.
-Application Filtering consists of three distinct source packages, corresponding to the LuCI App, the service daemon, and the kernel module.
-Before compiling, you must enable the build options for these three packages. You can do this by selecting `luci-app-oaf` via the `make menuconfig` graphical interface.
-Alternatively, you can enable them by executing the following commands (run from the source code root directory):
+
+保存页面会触发 `oafd` 重新加载规则，无需更新应用特征库。
+
+### 支持的自定义规则语法
+
+```text
+||example.org^
+@@||sub.example.org^
+! comment
+# comment
+/REGEX/
 ```
-echo "CONFIG_PACKAGE_luci-app-oaf=y" >>.config
+
+说明：
+
+- `||example.org^`：阻止 `example.org` 及其所有子域名。
+- `@@||sub.example.org^`：放行 `sub.example.org` 及其所有子域名，放行规则优先级高于阻止规则。
+- `! comment` 和 `# comment`：注释行。
+- `/REGEX/`：使用正则表达式匹配域名，例如 `/allaw(os|tech)\.[cn]/`。
+- `||...^` 和 `@@||...^` 的域名部分支持 `*`，例如 `||aa*.example.com^`。
+
+不支持将指定地址重定向到给定 IP 的规则，例如 hosts/DNS 类规则；这类能力应由 DNS 组件处理。
+
+### 自定义规则开关
+
+自定义规则页面包含：
+
+- `启用自定义规则`：关闭后所有自定义规则不生效。
+- `时间段执行`：开启后，自定义规则只在 OAF 时间规则生效时执行；关闭时，即使当前不在应用过滤时间段内，自定义规则也可以单独保持过滤器运行。
+- 规则输入框：每行一条规则。
+
+<!-- 当仅自定义规则处于生效状态时，运行状态页面会显示：
+
+```text
+（仅自定义规则状态）
+``` -->
+
+### 规则数量上限
+
+自定义规则页面会按设备可用空间动态计算规则上限：
+
+```text
+floor(磁盘剩余可用字节数 / (80 * 1000))
+```
+
+计算使用十进制单位，即：
+
+```text
+1 MB = 1000 KB
+```
+
+计算结果会写入 UCI 配置 `appfilter.global.custom_rule_max_num`，后端加载规则时按该值限制有效规则数量。
+
+## 编译方法
+
+1. 准备一套已经成功编译过固件的 OpenWrt 源码。
+
+2. 将本仓库放入 OpenWrt 源码的 `package` 目录，例如：
+
+```sh
+git clone <this-repository-url> package/OpenAppFilter
+```
+
+3. 启用编译选项。
+
+应用过滤包含三个包：LuCI 应用、用户态服务和内核模块。可以在 `make menuconfig` 中选择 `luci-app-oaf`，也可以执行：
+
+```sh
+echo "CONFIG_PACKAGE_luci-app-oaf=y" >> .config
 make defconfig
 ```
-This will automatically enable the compilation options for all three modules.
 
-4. Begin compiling OAF.
-If you have previously successfully compiled your OpenWrt source code, you can choose to compile only the individual packages:
-```
+4. 编译单个包：
+
+```sh
 make package/luci-app-oaf/compile V=s
 make package/open-app-filter/compile V=s
 make package/oaf/compile V=s
 ```
-Alternatively, you can recompile the entire firmware image; this will integrate the plug-in directly into the firmware build:
-```
+
+也可以重新编译完整固件：
+
+```sh
 make V=s
 ```
 
-## Discussion Group
+## 许可证
 
-[https://t.me/openappfilter](https://t.me/openappfilter) (Telegram)
-
-If you encounter some issues during installation or usage, you can join the group for discussion(The group was created only recently).
-
-## License
-- Individuals can use this software completely free of charge, and are also permitted to develop upon and redistribute it.
-- If you undertake derivative development based on OAF, you must adhere to the GPL 2.0 license and retain references to the OAF repository or website information.
-- If a company wishes to use this software, please contact the author for authorization.
-
-## Star
-If you find this project helpful, please give it a star.  
-[![Stargazers over time](https://starchart.cc/destan19/OpenAppFilter.svg?variant=adaptive)](https://starchart.cc/destan19/OpenAppFilter)
-
+- 个人可以免费使用，也允许在此基础上进行二次开发和再分发。
+- 如果基于 OAF 进行衍生开发，需要遵守 GPL 2.0 许可证，并保留 OAF 仓库或网站信息。
+- 公司使用请联系上游原作者获取授权。
