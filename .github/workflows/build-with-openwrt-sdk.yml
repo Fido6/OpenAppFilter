@@ -194,9 +194,9 @@ jobs:
           fi
           
           echo "========== compile kmod-oaf =========="
-          sudo make package/oaf/compile -j$(nproc) V=s || sudo make package/oaf/compile -j1 V=s
+          sudo make package/oaf/compile -j$(nproc) V=s
           echo "========== compile appfilter (oafd) =========="
-          sudo make package/open-app-filter/compile -j$(nproc) V=s || sudo make package/open-app-filter/compile -j1 V=s
+          sudo make package/open-app-filter/compile -j$(nproc) V=s
           echo "========== compile luci-app-oaf =========="
           sudo make package/luci-app-oaf/compile -j$(nproc) V=s || sudo make package/luci-app-oaf/compile -j1 V=s
           sudo chmod 777 -R .

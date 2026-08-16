@@ -3,7 +3,6 @@ OBJS := \
     appfilter_netlink.o \
     appfilter_ubus.o \
     appfilter_config.o \
-    appfilter_custom_rule.o \
     utils.o \
     main.o
 
