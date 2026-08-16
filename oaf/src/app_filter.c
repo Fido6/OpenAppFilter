@@ -282,7 +282,7 @@ static int add_app_feature(int appid, char *name, char *feature)
 	char src_port_str[16] = {0};
 	port_info_t dport_info;
 	char dst_port_str[16] = {0};
-	char host_url[32] = {0};
+	char host_url[MAX_HOST_URL_LEN] = {0};
 	char request_url[128] = {0};
 	char dict[128] = {0};
 	int proto = IPPROTO_TCP;
@@ -1095,8 +1095,16 @@ static int match_app_filter_user(af_client_info_t *client){
 
 static int match_app_filter_rule(int appid, af_client_info_t *client)
 {
+	int is_custom_rule = (appid >= AF_CUSTOM_RULE_APPID_BASE && appid < AF_CUSTOM_RULE_APPID_MAX);
+
 	if (!match_app_filter_user(client))
 		return AF_FALSE;
+
+	if (g_custom_rule_only_mode && !is_custom_rule)
+		return AF_FALSE;
+
+	if (is_custom_rule)
+		return AF_TRUE;
 
 	// All apps mode: skip appid check, match user only
 	if (g_app_filter_mode == 1) {
@@ -1333,7 +1341,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	conn->total_pkts++;
     spin_unlock(&af_conn_lock);
 
-	if (conn->drop && g_app_filter_mode){
+	if (conn->drop && g_app_filter_mode && !g_custom_rule_only_mode){
 		AF_LMT_INFO("bypass mod drop all app\n");
 		return NF_DROP;
 	}
@@ -1342,12 +1350,17 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 	{
 		flow.app_id = conn->app_id;
 		flow.drop = conn->drop;
-		if (g_disable_quic && flow.drop && flow.app_id == APPID_QUIC){
+		if (g_custom_rule_only_mode &&
+			(flow.app_id < AF_CUSTOM_RULE_APPID_BASE || flow.app_id >= AF_CUSTOM_RULE_APPID_MAX)){
+			flow.drop = 0;
+			conn->drop = 0;
+		}
+		if (!g_custom_rule_only_mode && g_disable_quic && flow.drop && flow.app_id == APPID_QUIC){
 			AF_LMT_INFO("bypass drop quic\n");
 			return NF_DROP;
 		}
 
-		if (check_app_action_changed(flow.drop, flow.app_id, client)){
+		if (!conn->ignore && check_app_action_changed(flow.drop, flow.app_id, client)){
 			flow.drop = !flow.drop;
 			AF_LMT_DEBUG("update appid %d action, new action = %s\n", flow.app_id, flow.drop ? "drop" : "accept");
 		}
@@ -1360,7 +1373,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		}
 
 		
-		if (g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
+		if (!g_custom_rule_only_mode && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
 			conn->app_id = APPID_QUIC;
 			conn->drop = 1;
 			AF_LMT_INFO("match quic proto, drop\n");
@@ -1386,7 +1399,7 @@ static u_int32_t app_filter_hook_bypass_handle(struct sk_buff *skb, struct net_d
 		if (!match_feature(&flow) && 0 == g_app_filter_mode)
 			goto EXIT;
 		
-		if (g_oaf_filter_enable){
+		if (g_oaf_filter_enable && !(flow.feature && flow.feature->ignore)){
 			if (match_app_filter_rule(flow.app_id, client)){
 				flow.drop = 1;
 				AF_INFO("##Drop appid %d\n",flow.app_id);
@@ -1501,21 +1514,27 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		
 		if (g_oaf_filter_enable){
 			// quic proto
-			if (g_disable_quic && app_id == APPID_QUIC && ct_action){
+			if (!g_custom_rule_only_mode && g_disable_quic && app_id == APPID_QUIC && ct_action){
 				AF_LMT_INFO("mark = %x,drop appid = %d\n", ct->mark, app_id);
 				return NF_DROP;
 			}
 
-			if (g_app_filter_mode && ct_action){
+			if (g_app_filter_mode && ct_action && !g_custom_rule_only_mode){
 				AF_LMT_INFO("ct drop all app\n");
 				return NF_DROP;
 			}
 		}
 	
-		if (app_id > 1000 && app_id < 32000)
+		if ((app_id > 1000 && app_id < 32000) ||
+			(app_id >= AF_CUSTOM_RULE_APPID_BASE && app_id < AF_CUSTOM_RULE_APPID_MAX))
 		{
 			AF_LMT_DEBUG("appid = %d, ct_action = %d\n", app_id, ct_action);
-			if (check_app_action_changed(ct_action, app_id, client)){
+			if (g_custom_rule_only_mode &&
+				(app_id < AF_CUSTOM_RULE_APPID_BASE || app_id >= AF_CUSTOM_RULE_APPID_MAX)){
+				ct->mark &= ~NF_DROP_BIT;
+				ct_action = 0;
+			}
+			if (!flow.ignore && check_app_action_changed(ct_action, app_id, client)){
 				if (ct_action) // drop --> accept
 					ct->mark &= ~NF_DROP_BIT;
 				else
@@ -1562,7 +1581,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		return NF_ACCEPT;
 
 
-	if (g_oaf_filter_enable && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
+	if (!g_custom_rule_only_mode && g_oaf_filter_enable && g_disable_quic && af_match_quic(&flow) && match_app_filter_user(client)){
 		ct->mark = (ct->mark & 0xFFFF0000) | (APPID_QUIC & 0xFFFF);
 		ct->mark |= NF_DROP_BIT;	
 		AF_LMT_INFO("match quick drop,  %s %pI4(%d)--> %pI4(%d) len = %d [%02x %02x %02x %02x %02x %02x %02x %02x] \n ", IPPROTO_TCP == flow.l4_protocol ? "tcp" : "udp",
@@ -1610,7 +1629,7 @@ static u_int32_t app_filter_hook_gateway_handle(struct sk_buff *skb, struct net_
 		AF_LMT_DEBUG("gateway set ignore bit, ct->mark = %x\n", ct->mark);
 	}
 	
-	if (g_oaf_filter_enable){
+	if (g_oaf_filter_enable && !(flow.feature && flow.feature->ignore)){
 		if (match_app_filter_rule(flow.app_id, client))
 		{
 			ct->mark |= NF_DROP_BIT;

@@ -2012,8 +2012,10 @@ static int handle_get_oaf_status(struct ubus_context *ctx, struct ubus_object *o
     struct json_object *response = json_object_new_object();
     struct json_object *data_obj = json_object_new_object();
     char result[128] = {0};
+    char custom_rule_only_result[128] = {0};
     char kernel_version[128] = {0};
     int enable = 0;
+    int custom_rule_only_mode = 0;
     int ret = 0;
     int engine_status = 0;
     struct uci_context *uci_ctx = uci_alloc_context();
@@ -2032,6 +2034,13 @@ static int handle_get_oaf_status(struct ubus_context *ctx, struct ubus_object *o
     json_object_object_add(data_obj, "version", json_object_new_string(OAF_VERSION));
 
     json_object_object_add(data_obj, "engine_status", json_object_new_int(engine_status));
+    if (engine_status == 1 &&
+        af_read_file_value("/proc/sys/oaf/custom_rule_only_mode",
+                           custom_rule_only_result,
+                           sizeof(custom_rule_only_result)) == 0) {
+        custom_rule_only_mode = atoi(custom_rule_only_result);
+    }
+    json_object_object_add(data_obj, "custom_rule_only_mode", json_object_new_int(custom_rule_only_mode));
 
     // Read disable_hnat configuration
     if (uci_ctx) {

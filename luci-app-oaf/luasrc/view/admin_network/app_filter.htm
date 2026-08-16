@@ -1294,8 +1294,12 @@
                             if (data.data.enable === 1) {
                                 runStatusElement.textContent = '<%:Running%>';
                                 runStatusElement.style.color = 'green'; 
-                                if (data.data.time_mode == 1 && data.data.filter == 1) {
+                                if (data.data.custom_rule_only_mode == 1) {
+                                    runDescElement.textContent = `（<%:仅自定义规则状态%>）`;
+                                } else if (data.data.time_mode == 1 && data.data.filter == 1) {
                                     runDescElement.textContent = `(<%:Currently in dynamic time mode,will close in%> ${data.data.remain_time} <%:minutes%>)`;
+                                } else {
+                                    runDescElement.textContent = '';
                                 }
                             } else {
                                 runStatusElement.textContent = '<%:Not Running%>';

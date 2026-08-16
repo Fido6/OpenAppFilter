@@ -22,6 +22,7 @@ int g_feature_init = 0;
 char g_oaf_version[64] = AF_VERSION;
 int g_disable_quic = 0;
 int g_app_filter_mode = 0; // 0 = specified apps, 1 = all apps
+int g_custom_rule_only_mode = 0;
 /* 
 	cat /proc/sys/oaf/debug
 */
@@ -127,6 +128,13 @@ static struct ctl_table oaf_table[] = {
 	{
 		.procname	= "app_filter_mode",
 		.data		= &g_app_filter_mode,
+		.maxlen 	= sizeof(int),
+		.mode		= 0666,
+		.proc_handler	= proc_dointvec,
+	},
+	{
+		.procname	= "custom_rule_only_mode",
+		.data		= &g_custom_rule_only_mode,
 		.maxlen 	= sizeof(int),
 		.mode		= 0666,
 		.proc_handler	= proc_dointvec,
