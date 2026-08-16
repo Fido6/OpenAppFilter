@@ -67,7 +67,9 @@ max_num.rawhtml = true
 
 function max_num.cfgvalue(self, section)
     m.uci:set("appfilter", "global", "custom_rule_max_num", tostring(rule_limit))
-    return string.format("Current limit: %d valid rules. It is calculated in this page as floor(available disk space bytes / (80 * 1000)); decimal units are used, so 1 MB = 1000 KB.", rule_limit)
+    return translate("Current limit") .. ": " .. tostring(rule_limit) .. " " ..
+        translate("valid rules") .. ". " ..
+        translate("It is calculated in this page as floor(available disk space bytes / (80 * 1000)); decimal units are used, so 1 MB = 1000 KB.")
 end
 
 local rules = s:option(TextValue, "_rules", translate("Rules (AdGuard Home Syntax)"),
