@@ -1,7 +1,7 @@
 #
 # Copyright (c) 2026 OpenAppFilter
 # Description: Manual build OpenAppFilter packages (kmod-oaf / appfilter / luci-app-oaf)
-#              with the official OpenWrt SDK, based on the pattern of
+#              with the official ImmortalWrt SDK, based on the pattern of
 #              openwrt-passwall2 "Auto compile with openwrt sdk"
 #
 name: "Auto compile with immortalwrt sdk"
@@ -43,7 +43,7 @@ on:
           - ath79/generic
           - octeon/generic
       custom_sdk_url:
-        description: 'Custom OpenWrt SDK URL (overrides version/target, for platforms/versions not listed above)'
+        description: 'Custom ImmortalWrt SDK URL (overrides version/target, for platforms/versions not listed above)'
         required: false
         default: ''
       release_tag:
@@ -93,21 +93,21 @@ jobs:
         with:
           fetch-depth: 1
 
-      - name: Resolve OpenWrt SDK URL
+      - name: Resolve ImmortalWrt SDK URL
         id: sdk
         run: |
           if [ -n "${{ inputs.custom_sdk_url }}" ]; then
             sdk_url="${{ inputs.custom_sdk_url }}"
             echo "Using custom SDK URL"
           else
-            OWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
-            OWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
-            echo "OWRT_VERSION=${OWRT_VERSION}" >> "$GITHUB_ENV"
-            echo "OWRT_TARGET=${OWRT_TARGET}" >> "$GITHUB_ENV"
-            if [ "${OWRT_VERSION}" = "snapshots" ]; then
-              base_url="https://downloads.immortalwrt.org/${OWRT_VERSION}/targets/${OWRT_TARGET}/"
+            IWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
+            IWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
+            echo "IWRT_VERSION=${IWRT_VERSION}" >> "$GITHUB_ENV"
+            echo "IWRT_TARGET=${IWRT_TARGET}" >> "$GITHUB_ENV"
+            if [ "${IWRT_VERSION}" = "snapshots" ]; then
+              base_url="https://downloads.immortalwrt.org/${IWRT_VERSION}/targets/${IWRT_TARGET}/"
             else
-              base_url="https://downloads.immortalwrt.org/releases/${OWRT_VERSION}/targets/${OWRT_TARGET}/"
+              base_url="https://downloads.immortalwrt.org/releases/${IWRT_VERSION}/targets/${IWRT_TARGET}/"
             fi
             sdk_file=$(curl -s "$base_url" | grep -oE 'immortalwrt-sdk-[^"<>]*\.tar\.(zst|xz)' | sort -u | tail -n1)
             if [ -z "$sdk_file" ]; then
@@ -145,10 +145,10 @@ jobs:
           #     -e 's|git\.openwrt\.org/openwrt|github.com/openwrt|g' \
           #     "feeds.conf.default"
 
-          # Pin packages/luci feeds to the branch matching the selected OpenWrt version
+          # Pin packages/luci feeds to the branch matching the selected ImmortalWrt version
           #branch="master"
-          OWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
-          # case "${OWRT_VERSION}" in
+          IWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
+          # case "${IWRT_VERSION}" in
           #   25.12*) branch="openwrt-25.12" ;;
           #   24.10*) branch="openwrt-24.10" ;;
           # esac
@@ -220,17 +220,17 @@ jobs:
 
           kernel_ver=$(grep -m1 '^LINUX_VERSION[[:space:]]*:=' include/kernel-version.mk | awk '{print $3}')
           [ -z "$kernel_ver" ] && kernel_ver="unknown"
-          OWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
-          OWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
+          IWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
+          IWRT_TARGET="${{ inputs.target || 'rockchip/armv8' }}"
           cat > upload/build_info.txt <<EOF
           Repository: ${{ github.repository }} @ ${{ github.sha }}
           Built At: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
-          OpenWrt Version: ${OWRT_VERSION}
-          Target: ${OWRT_TARGET}
+          ImmortalWrt Version: ${IWRT_VERSION}
+          Target: ${IWRT_TARGET}
           Kernel Version: ${kernel_ver}
           SDK URL: ${SDK_URL}
           Packages: kmod-oaf (kernel DPI module), appfilter (oafd daemon), luci-app-oaf (LuCI UI)
-          Note: kmod-oaf is kernel-version specific, install it only on a matching OpenWrt firmware.
+          Note: kmod-oaf is kernel-version specific, install it only on a matching ImmortalWrt firmware.
           EOF
 
           apk_count=$(ls upload/*.apk 2>/dev/null | wc -l)
@@ -239,7 +239,7 @@ jobs:
             exit 1
           fi
 
-          target_safe=$(echo "${OWRT_TARGET}" | tr '/' '-')
+          target_safe=$(echo "${IWRT_TARGET}" | tr '/' '-')
           echo "TARGET_SAFE=$target_safe" >> "$GITHUB_ENV"
           echo "status=success" >> "$GITHUB_OUTPUT"
 
@@ -263,7 +263,7 @@ jobs:
           files: |
             sdk/upload/*.apk
           body: |
-            OpenAppFilter packages built with OpenWrt SDK
-            - OpenWrt: ${{ inputs.immortalwrt_version || '25.12.1' }}
+            OpenAppFilter packages built with ImmortalWrt SDK
+            - ImmortalWrt: ${{ inputs.immortalwrt_version || '25.12.1' }}
             - Target: ${{ inputs.target || 'rockchip/armv8' }}
             - Commit: ${{ github.sha }}
