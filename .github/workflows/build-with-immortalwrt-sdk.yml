@@ -4,7 +4,7 @@
 #              with the official OpenWrt SDK, based on the pattern of
 #              openwrt-passwall2 "Auto compile with openwrt sdk"
 #
-name: "Auto compile with openwrt sdk"
+name: "Auto compile with immortalwrt sdk"
 
 on:
   # push:
@@ -12,7 +12,7 @@ on:
   workflow_dispatch:
     inputs:
       immortalwrt_version:
-        description: 'OpenWrt version: snapshots, 25.12.2, ...'
+        description: 'ImmortalWrt version: snapshots, 25.12.2, ...'
         required: true
         default: '25.12.1'
         type: choice
@@ -146,7 +146,7 @@ jobs:
           #     "feeds.conf.default"
 
           # Pin packages/luci feeds to the branch matching the selected OpenWrt version
-          branch="master"
+          #branch="master"
           OWRT_VERSION="${{ inputs.immortalwrt_version || '25.12.1' }}"
           # case "${OWRT_VERSION}" in
           #   25.12*) branch="openwrt-25.12" ;;
